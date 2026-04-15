@@ -1,4 +1,4 @@
-# Yummylanders-CS-3110-Final-Project-
+# EncloseCamel
 
 Ben Han bh643
 
