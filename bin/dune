@@ -1,2 +1,2 @@
-(executable (public_name a1) (name main) (libraries a1 ANSITerminal))
+(executable (public_name EncloseCamel) (name main) (libraries EncloseCamel ANSITerminal))
 

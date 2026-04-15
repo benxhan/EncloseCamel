@@ -1,7 +1,6 @@
-
-
 let () = print_endline "Hello, World!"
 
+(* 
 let rec prompt_and_print () =
   let () =
     print_string
@@ -20,4 +19,4 @@ let rec prompt_and_print () =
       let cheat_input = read_line () in
       if the_input = "quit" then () else prompt_and_print ()
 
-let () = prompt_and_print ()
+let () = prompt_and_print () *)
