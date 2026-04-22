@@ -5,7 +5,7 @@ type tile =
   | Blank
 
 type board = {
-	grid : char array array;
+	grid : tile array array;
 	walls_remaining : int;
 }
 
