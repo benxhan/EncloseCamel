@@ -52,20 +52,6 @@ val in_bounds : board -> coordinate -> bool
 *)
 val get_tile : board -> coordinate -> char
 
-(** [is_water board coord] returns [true] when tile is [water_ch]. *)
-val is_water : board -> coordinate -> bool
-
-(** [is_wall board coord] returns [true] when tile is [wall_ch]. *)
-val is_wall : board -> coordinate -> bool
-
-(** [is_blocked board coord] returns [true] for water or wall tiles.
-
-  Expected behavior:
-  - Treat only [water_ch] and [wall_ch] as blocked terrain.
-  - Callers should still perform [in_bounds] checks where needed.
-*)
-val is_blocked : board -> coordinate -> bool
-
 (** [is_free board coord] returns [true] for traversable non-camel tiles.
 
   Expected behavior:
