@@ -1,25 +1,33 @@
 type coordinate = { x : int; y : int }
+type tile = 
+  | Camel
+  | Water
+  | Wall 
+  | Blank
 
 type board = {
-  width : int;
-  height : int;
-  rocks : coordinate list;
+  grid : tile array array;
+  walls_remaining : int;
 }
 
-type place_result =
-  | Ok of board
-  | Out_of_bounds
-  | Occupied
-
-(** [init ~width ~height] creates a new empty board with the provided dimensions.
+(** [init ~width ~height ~camel ~water ~walls_available] constructs an initial
+    board with a 2D character grid.
 
     Expected behavior:
-    - Width and height represent the full valid coordinate range of the board.
-    - The returned board starts with zero rocks.
-    - The implementation should reject non-positive dimensions (for example by
-      raising [Invalid_argument]) so callers cannot create impossible boards.
+    - The grid dimensions must match [height] rows and [width] columns.
+    - All cells start as [empty_ch], then water and camel are placed.
+    - [camel] must be in bounds and not on blocked terrain.
+    - All water coordinates must be in bounds and unique.
+    - [walls_remaining] starts at [walls_available].
+    - Return [Error ...] for invalid initialization inputs.
 *)
-val init : width:int -> height:int -> board
+val init :
+  width:int ->
+  height:int ->
+  camel:coordinate ->
+  water:coordinate list ->
+  walls_available:int ->
+  board
 
 (** [in_bounds board coord] returns [true] if [coord] is on the board.
 
@@ -31,22 +39,81 @@ val init : width:int -> height:int -> board
 *)
 val in_bounds : board -> coordinate -> bool
 
-(** [has_rock board coord] reports whether [coord] is already occupied.
+(** [get_tile board coord] reads the grid character at [coord].
 
     Expected behavior:
-    - Returns [true] exactly when [coord] appears in [board.rocks].
-    - Equality should compare both [x] and [y].
-    - The function is pure and must not modify [board].
+  - Intended for in-bounds coordinates.
+  - Should return one of the known tile characters.
 *)
-val has_rock : board -> coordinate -> bool
+val get_tile : board -> coordinate -> char
 
-(** [place_rock board coord] attempts to place one rock at [coord].
+(** [is_water board coord] returns [true] when tile is [water_ch]. *)
+val is_water : board -> coordinate -> bool
+
+(** [is_wall board coord] returns [true] when tile is [wall_ch]. *)
+val is_wall : board -> coordinate -> bool
+
+(** [is_blocked board coord] returns [true] for water or wall tiles.
+
+  Expected behavior:
+  - Treat only [water_ch] and [wall_ch] as blocked terrain.
+  - Callers should still perform [in_bounds] checks where needed.
+*)
+val is_blocked : board -> coordinate -> bool
+
+(** [is_free board coord] returns [true] for traversable non-camel tiles.
+
+  Expected behavior:
+  - [true] only when in bounds and tile is [empty_ch].
+*)
+val is_free : board -> coordinate -> bool
+
+(** [place_wall board coord] attempts to place a wall on [coord].
 
     Expected behavior:
-    - Return [Out_of_bounds] when [coord] is outside the board.
-    - Return [Occupied] when a rock already exists at [coord].
-    - Return [Ok next_board] when placement succeeds.
-    - On success, [next_board] should contain all existing rocks plus [coord].
-    - The original [board] should remain unchanged (functional update style).
+  - Reject placement on out-of-bounds/camel/water/existing-wall tiles.
+  - Reject placement when [walls_remaining = 0].
+  - On success, write [wall_ch] to the grid and decrement wall budget.
+  - Return a new board state (functional update semantics).
 *)
-val place_rock : board -> coordinate -> place_result
+val place_wall : board -> coordinate -> board
+
+(** [neighbors4 board coord] returns orthogonal in-bounds neighbors.
+
+  Expected behavior:
+  - Only up, down, left, right; no diagonals.
+  - Exclude out-of-bounds coordinates.
+*)
+val neighbors4 : board -> coordinate -> coordinate list
+
+(** [camel_moves board] returns legal one-step destinations for camel. *)
+val camel_moves : board -> coordinate list
+
+(** [move_camel board dest] moves camel one step if legal.
+
+  Expected behavior:
+  - Destination must be adjacent and traversable.
+  - On success, old camel tile becomes [empty_ch] and destination becomes
+    [camel_ch].
+*)
+val move_camel : board -> coordinate -> board
+
+(** [reachable_from_camel board] returns unique tiles reachable from camel.
+
+  Expected behavior:
+  - Traverse by 4-direction movement through free tiles.
+  - Include the camel tile in the output.
+*)
+val reachable_from_camel : board -> coordinate list
+
+(** [reachable_area_size board] equals number of reachable tiles. *)
+val reachable_area_size : board -> int
+
+(** [camel_can_escape board] is [true] if camel can reach any boundary tile. *)
+val camel_can_escape : board -> bool
+
+(** [is_trapped board] indicates whether camel cannot escape. *)
+val is_trapped : board -> bool
+
+(** [score board] computes points as reachable free-to-roam area size. *)
+val score : board -> int
