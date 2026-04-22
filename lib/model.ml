@@ -9,34 +9,6 @@ type board = {
 	walls_remaining : int;
 }
 
-type init_error =
-	| Non_positive_dimensions
-	| Negative_wall_budget
-	| Camel_out_of_bounds
-	| Camel_on_water
-	| Invalid_water_coordinate
-	| Duplicate_water_coordinate
-
-type place_wall_error =
-	| No_walls_left
-	| Out_of_bounds
-	| On_camel
-	| On_water
-	| Occupied_by_wall
-
-type move_camel_error =
-	| Move_out_of_bounds
-	| Move_blocked
-	| Not_adjacent
-
-let empty_ch = '.'
-
-let camel_ch = 'C'
-
-let water_ch = '~'
-
-let wall_ch = '#'
-
 let init ~width:_ ~height:_ ~camel:_ ~water:_ ~walls_available:_ =
 	failwith "TODO: Model.init"
 
