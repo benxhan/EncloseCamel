@@ -99,6 +99,3 @@ val neighbors4 : board -> coordinate -> coordinate list
   - Include the camel tile in the output.
 *)
 val reachable_from_camel : board -> enclosed_state
-
-(** [is_trapped board] indicates whether camel cannot escape. *)
-val is_trapped : board -> bool
