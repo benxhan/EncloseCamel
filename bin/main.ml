@@ -1,22 +1,42 @@
-let () = print_endline "Hello, World!"
+open EncloseCamel
+open Model
+open Parser
+open Render
 
-(* 
-let rec prompt_and_print () =
-  let () =
-    print_string
-      "Enter dictionary filename in data directory to play Wordle or \"quit\" \
-       to exit > "
-  in
-  let the_input = read_line () in
-  match the_input with
-  | exception Failure s -> failwith "Incorrect file path"
-  | _ ->
-      let () =
-        print_endline
-          "Enable cheat mode to see the answer? enter y for yes or anyhing \
-           else to cancel > "
-      in
-      let cheat_input = read_line () in
-      if the_input = "quit" then () else prompt_and_print ()
+let rec loop board =
+  (* Draw the current board at the start of each turn. *)
+  render_board board;
+  (* Ask the player for either a coordinate or the quit command. *)
+  print_string "\nEnter coordinate as x,y (or 'quit'): ";
+  (* Read exactly one line of terminal input for this turn. *)
+  let input = read_line () in
+  (* End the loop if the player asked to quit (case-insensitive). *)
+  if String.lowercase_ascii (String.trim input) = "quit" then
+    print_endline "Goodbye!"
+  else
+    (* Parse the input into a coordinate before touching game state. *)
+    match parse_coordinate input with
+    | Error err ->
+        (* Report parse errors and keep the same board state. *)
+        print_endline (parse_error_to_string err);
+        loop board
+    | Ok coord ->
+        (* Attempt to place a rock and branch on the result. *)
+        (match place_rock board coord with
+        | Ok next_board ->
+            (* Successful move: confirm and continue with updated state. *)
+            print_endline "Placed rock.";
+            loop next_board
+        | bad_move ->
+            (* Failed move: explain why and continue with current state. *)
+            print_place_result bad_move;
+            loop board)
 
-let () = prompt_and_print () *)
+let () =
+  (* Create the initial fixed-size board for the first playable version. *)
+  let board = init ~width:10 ~height:8 in
+  (* Display startup guidance before entering the interactive loop. *)
+  print_endline "ASCII Rock Map";
+  print_endline "Coordinates are zero-based. Example: 3,4";
+  (* Hand control to the recursive game loop. *)
+  loop board
