@@ -10,6 +10,11 @@ type board = {
   walls_remaining : int;
 }
 
+type enclosed_state = {
+  tiles : coordinate list;
+  score : int;
+}
+
 (** [init ~width ~height ~camel ~water ~walls_available] constructs an initial
     board with a 2D character grid.
 
@@ -71,7 +76,8 @@ val is_free : board -> coordinate -> bool
 (** [place_wall board coord] attempts to place a wall on [coord].
 
     Expected behavior:
-  - Reject placement on out-of-bounds/camel/water/existing-wall tiles.
+  - Reject placement on out-of-bounds/camel/water/
+  - If placement is on existing wall tile, remove it.
   - Reject placement when [walls_remaining = 0].
   - On success, write [wall_ch] to the grid and decrement wall budget.
   - Return a new board state (functional update semantics).
@@ -86,34 +92,13 @@ val place_wall : board -> coordinate -> board
 *)
 val neighbors4 : board -> coordinate -> coordinate list
 
-(** [camel_moves board] returns legal one-step destinations for camel. *)
-val camel_moves : board -> coordinate list
-
-(** [move_camel board dest] moves camel one step if legal.
-
-  Expected behavior:
-  - Destination must be adjacent and traversable.
-  - On success, old camel tile becomes [empty_ch] and destination becomes
-    [camel_ch].
-*)
-val move_camel : board -> coordinate -> board
-
 (** [reachable_from_camel board] returns unique tiles reachable from camel.
 
   Expected behavior:
   - Traverse by 4-direction movement through free tiles.
   - Include the camel tile in the output.
 *)
-val reachable_from_camel : board -> coordinate list
-
-(** [reachable_area_size board] equals number of reachable tiles. *)
-val reachable_area_size : board -> int
-
-(** [camel_can_escape board] is [true] if camel can reach any boundary tile. *)
-val camel_can_escape : board -> bool
+val reachable_from_camel : board -> enclosed_state
 
 (** [is_trapped board] indicates whether camel cannot escape. *)
 val is_trapped : board -> bool
-
-(** [score board] computes points as reachable free-to-roam area size. *)
-val score : board -> int
