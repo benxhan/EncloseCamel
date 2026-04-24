@@ -93,3 +93,6 @@ let load_board filename =
       | None -> failwith "load_board: no camel tile found"
       | Some c -> c
     in
+
+    ignore camel;
+    { Model.grid; walls_remaining = !wall_count }
