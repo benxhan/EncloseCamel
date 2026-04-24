@@ -9,11 +9,13 @@
 *)
 val render_board : Model.board -> unit
 
+val str_render_board : Model.board -> string
+
 (** [print_place_result result] prints feedback for failed placements.
 
 		Expected behavior:
 		- For [Out_of_bounds], explain that the coordinate is outside the board.
-		- For [Occupied], explain that the target cell already has a rock.
+		- For [Occupied], explain that the target cell can't have a rock (water or caml).
 		- For [Ok _], print nothing because success feedback can be handled by the
 			caller (for example the main loop).
 *)
