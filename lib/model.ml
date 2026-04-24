@@ -59,6 +59,11 @@ let init ~width ~height ~camel ~water ~walls_available =
 
   { grid; walls_remaining = walls_available }
 
+(* [in_bounds board coord] returns [true] if [coord] is on the board.
+
+   Expected behavior: - Coordinates are zero-based. - A coordinate is in bounds
+   when [0 <= x < board.width] and [0 <= y < board.height]. - The function is
+   pure and must not modify [board]. *)
 let in_bounds (_board : board) (_coord : coordinate) =
   let grid = _board.grid in
   _coord.x < Array.length grid

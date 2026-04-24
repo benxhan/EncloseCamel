@@ -80,21 +80,12 @@ val init :
     - [walls_remaining] is carried over unchanged. *)
 val set_tile : board -> coordinate -> tile -> unit
 
-(** [in_bounds board coord] returns [true] if [coord] is on the board.
-
-    Expected behavior:
-    - Coordinates are zero-based.
-    - A coordinate is in bounds when [0 <= x < board.width] and
-      [0 <= y < board.height].
-    - The function is pure and must not modify [board]. *)
-val in_bounds : board -> coordinate -> bool
-
 (** [get_tile board coord] reads the grid character at [coord].
 
     Expected behavior:
     - Intended for in-bounds coordinates.
     - Should return one of the known tile characters. *)
-val get_tile : board -> coordinate -> char
+val get_tile : board -> coordinate -> tile
 
 (** [check_coord_placement board coord] returns whether a wall can be placed at
     [coord].
