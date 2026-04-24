@@ -1,9 +1,9 @@
 (** A position on the board grid. Coordinates are zero-based, with the origin
-    [(0, 0)] at the top-left corner. [x] increases rightward and [y] increases
-    downward. *)
+    [(0, 0)] at the top-left corner. [r] increases downward and [c] increases
+    rightward. *)
 type coordinate = {
-  x : int;
-  y : int;
+  r : int;
+  c : int;
 }
 
 (** The content of a single cell on the board.
@@ -18,7 +18,7 @@ type tile =
   | Blank
 
 (** The full state of the game board.
-    - [grid] — a row-major 2-D array of tiles, indexed as [grid.(y).(x)].
+    - [grid] — a row-major 2-D array of tiles, indexed as [grid.(r).(c)].
     - [walls_remaining] — the number of walls the player may still place. *)
 type board = {
   grid : tile array array;
@@ -36,21 +36,15 @@ type place_result =
   | Ok
 
 type enclosed_state = {
-  tiles : coordinate list;
+  tiles : bool array array;
   score : int;
 }
 
 (** The result of a reachability query originating from the camel's position.
     - [tiles] — every coordinate reachable from the camel via 4-directional
       movement through [Blank] cells, including the camel's own cell.
-    - [score] — the number of [Water] tiles that are fully enclosed (i.e. not
-      reachable from the camel). Expected behavior:
-    - The grid dimensions must match [height] rows and [width] columns.
-    - All cells start as [empty_ch], then water and camel are placed.
-    - [camel] must be in bounds and not on blocked terrain.
-    - All water coordinates must be in bounds and unique.
-    - [walls_remaining] starts at [walls_available].
-    - Return [Error ...] for invalid initialization inputs. *)
+    - [score] — the number of enclosed [Camel] and [Blank] tiles (i.e., the
+      length of the [tiles] list, completely omitting [Water] tiles). *)
 val init :
   width:int ->
   height:int ->
@@ -117,5 +111,6 @@ val neighbors4 : board -> coordinate -> coordinate list
 
     Expected behavior:
     - Traverse by 4-direction movement through free tiles.
-    - Include the camel tile in the output. *)
-val reachable_from_camel : board -> enclosed_state
+    - Include the camel tile in the output. Requires:
+    - [coordinate] is the location of camel. *)
+val reachable_from_camel : board -> coordinate -> enclosed_state

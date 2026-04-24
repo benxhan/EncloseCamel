@@ -1,6 +1,6 @@
 type coordinate = {
-  x : int;
-  y : int;
+  r : int;
+  c : int;
 }
 
 type tile =
@@ -20,7 +20,7 @@ type place_result =
   | Ok
 
 type enclosed_state = {
-  tiles : coordinate list;
+  tiles : bool array array;
   score : int;
 }
 
@@ -30,7 +30,7 @@ let init ~width ~height ~camel ~water ~walls_available =
     failwith "init: width and height must be positive";
 
   (* Helper to validate that a coordinate is within the requested dimensions*)
-  let in_bounds_dims { x; y } = x >= 0 && x < width && y >= 0 && y < height in
+  let in_bounds_dims { r; c } = r >= 0 && r < height && c >= 0 && c < height in
 
   (* Validate camel *)
   if not (in_bounds_dims camel) then
@@ -54,8 +54,8 @@ let init ~width ~height ~camel ~water ~walls_available =
 
   (* Build the grid *)
   let grid = Array.init height (fun _ -> Array.make width Blank) in
-  List.iter (fun { x; y } -> grid.(y).(x) <- Water) water;
-  grid.(camel.y).(camel.x) <- Camel;
+  List.iter (fun { r; c } -> grid.(r).(c) <- Water) water;
+  grid.(camel.r).(camel.c) <- Camel;
 
   { grid; walls_remaining = walls_available }
 
@@ -64,21 +64,62 @@ let init ~width ~height ~camel ~water ~walls_available =
    Expected behavior: - Coordinates are zero-based. - A coordinate is in bounds
    when [0 <= x < board.width] and [0 <= y < board.height]. - The function is
    pure and must not modify [board]. *)
-let in_bounds (_board : board) (_coord : coordinate) =
-  let grid = _board.grid in
-  _coord.x < Array.length grid
-  && _coord.y < Array.length grid.(0)
-  && _coord.x >= 0 && _coord.y >= 0
 
-let get_tile _board _coord = _board.grid.(_coord.x).(_coord.y)
-let set_tile _board _coord _tile = _board.grid.(_coord.x).(_coord.y) <- _tile
+let get_tile _board _coord = _board.grid.(_coord.r).(_coord.c)
+let set_tile _board _coord _tile = _board.grid.(_coord.r).(_coord.c) <- _tile
 
 let check_coord_placement _board _coord =
+  let in_bounds (_board : board) (_coord : coordinate) =
+    let grid = _board.grid in
+    _coord.r < Array.length grid
+    && _coord.c < Array.length grid.(0)
+    && _coord.r >= 0 && _coord.c >= 0
+  in
   if not (in_bounds _board _coord) then Out_of_bounds
   else
     let coord_tile = get_tile _board _coord in
-    if coord_tile <> Water && coord_tile <> Wall then Occupied else Ok
+    if coord_tile = Blank then Ok else Occupied
 
 let place_wall _board _coord = failwith "TODO: Model.place_wall"
-let neighbors4 _board _coord = failwith "TODO: Model.neighbors4"
-let reachable_from_camel _board = failwith "TODO: Model.reachable_from_camel"
+
+let neighbors4 _board _coord =
+  let rec check_neighbor _board _coord dir (acc : coordinate list) =
+    if dir > 3 then acc
+    else
+      let neighbor_coord =
+        match dir with
+        | 0 -> { r = _coord.r + 1; c = _coord.c }
+        | 1 -> { r = _coord.r; c = _coord.c + 1 }
+        | 2 -> { r = _coord.r - 1; c = _coord.c }
+        | 3 -> { r = _coord.r; c = _coord.c - 1 }
+        | _ -> failwith "unexpected direction called for check_neighbor"
+      in
+      let new_acc =
+        if check_coord_placement _board neighbor_coord = Ok then
+          neighbor_coord :: acc
+        else acc
+      in
+      check_neighbor _board _coord (dir + 1) new_acc
+  in
+  check_neighbor _board _coord 0 []
+
+let reachable_from_camel _board camel_coord =
+  let _grid = _board.grid in
+  let height = Array.length _grid in
+  let width = Array.length _grid.(0) in
+  (* Initialize visited array to track seen tiles *)
+  let visited = Array.init height (fun _ -> Array.make width false) in
+  visited.(camel_coord.r).(camel_coord.c) <- true;
+  let _score = ref 1 in
+  let rec dfs _coord =
+    let neighbors = neighbors4 _board _coord in
+    List.iter
+      (fun (crd : coordinate) ->
+        if not visited.(crd.r).(crd.c) then (
+          visited.(crd.r).(crd.c) <- true;
+          _score := !_score + 1;
+          dfs crd))
+      neighbors
+  in
+  dfs camel_coord;
+  { tiles = visited; score = !_score }

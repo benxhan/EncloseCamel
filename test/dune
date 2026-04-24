@@ -5,4 +5,3 @@
 (test
  (name test_model)
  (libraries ounit2 EncloseCamel))
-

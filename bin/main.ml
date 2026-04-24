@@ -34,7 +34,7 @@ let rec loop board =
 
 let () =
   (* Create the initial fixed-size board for the first playable version. *)
-  let board = init ~width:10 ~height:8 ~camel:{x=0;y=0} ~water:[] ~walls_available:10 in
+  let board = init ~width:10 ~height:8 ~camel:{r=0;c=0} ~water:[] ~walls_available:10 in
   (* Display startup guidance before entering the interactive loop. *)
   print_endline "ASCII Rock Map";
   print_endline "Coordinates are zero-based. Example: 3,4";
