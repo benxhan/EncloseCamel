@@ -10,6 +10,15 @@ type board = {
   walls_remaining : int;
 }
 
+(*Type to represent a pair of coordinates to placa a rock
+Out_of_bounds has the coordinate (row, col)
+Occupied has the type of tile currently ocupying the tile
+*)
+type place_result = 
+| Out_of_bounds of int*int
+| Occupied of tile
+| Ok
+
 (** [init ~width ~height ~camel ~water ~walls_available] constructs an initial
     board with a 2D character grid.
 

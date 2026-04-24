@@ -9,6 +9,11 @@ type board = {
 	walls_remaining : int;
 }
 
+type place_result = 
+| Out_of_bounds of int*int
+| Occupied of tile
+| Ok
+
 let init ~width:_ ~height:_ ~camel:_ ~water:_ ~walls_available:_ =
 	failwith "TODO: Model.init"
 
