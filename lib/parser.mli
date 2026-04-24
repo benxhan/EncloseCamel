@@ -6,21 +6,29 @@ type parse_error =
 (** [parse_coordinate input] parses one user-entered coordinate string.
 
     Expected behavior:
-    - Accept input in the form [x,y].
+    - Accept input in the form [r,c].
     - Ignore leading/trailing whitespace around the whole input and around each
       coordinate token.
     - Return [Error Empty_input] when the trimmed input is empty.
     - Return [Error Bad_format] when the input does not contain exactly one
       comma with two coordinate fields.
     - Return [Error (Not_an_int token)] when a field is not a valid integer.
+<<<<<<< HEAD
     - Return [Ok {x; y}] on successful parsing. *)
+=======
+    - Return [Ok {r; c}] on successful parsing. *)
+>>>>>>> 3dce76d (changed x, y coords to row column coords to mitigate confusion, implemented and tested Model.neighbors4 and Model.reachable_from_camel. enclosed_state now includes a boolean 2d array instead of a list of coordinates to store enclosed space)
 val parse_coordinate : string -> (Model.coordinate, parse_error) result
 
 (** [parse_error_to_string err] converts parser errors into user-facing text.
 
     Expected behavior:
     - Produce concise, actionable messages suitable for terminal display.
+<<<<<<< HEAD
     - For [Bad_format], mention the accepted format (for example [x,y]).
+=======
+    - For [Bad_format], mention the accepted format (for example [r,c]).
+>>>>>>> 3dce76d (changed x, y coords to row column coords to mitigate confusion, implemented and tested Model.neighbors4 and Model.reachable_from_camel. enclosed_state now includes a boolean 2d array instead of a list of coordinates to store enclosed space)
     - For [Not_an_int token], include the bad token to help debugging input. *)
 val parse_error_to_string : parse_error -> string
 
