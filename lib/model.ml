@@ -12,9 +12,10 @@ type board = {
 }
 
 type place_result = 
-| Out_of_bounds of int*int
-| Occupied of tile
+| Out_of_bounds
+| Occupied
 | Ok
+
 type enclosed_state = {
   tiles : coordinate list;
   score : int;

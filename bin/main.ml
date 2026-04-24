@@ -22,19 +22,19 @@ let rec loop board =
         loop board
     | Ok coord ->
         (* Attempt to place a rock and branch on the result. *)
-        (match place_rock board coord with
+        (match place_wall board coord with
         | Ok next_board ->
             (* Successful move: confirm and continue with updated state. *)
             print_endline "Placed rock.";
             loop next_board
-        | bad_move ->
+        | Error bad_move ->
             (* Failed move: explain why and continue with current state. *)
             print_place_result bad_move;
             loop board)
 
 let () =
   (* Create the initial fixed-size board for the first playable version. *)
-  let board = init ~width:10 ~height:8 in
+  let board = init ~width:10 ~height:8 ~camel:{x=0;y=0} ~water:[] ~walls_available:10 in
   (* Display startup guidance before entering the interactive loop. *)
   print_endline "ASCII Rock Map";
   print_endline "Coordinates are zero-based. Example: 3,4";

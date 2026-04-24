@@ -10,14 +10,13 @@ type board = {
   walls_remaining : int;
 }
 
-(*Type to represent a pair of coordinates to placa a rock
-Out_of_bounds has the coordinate (row, col)
-Occupied has the type of tile currently ocupying the tile
+(*Represents whether a wall placement was successful or if it failed, and why.
 *)
 type place_result = 
-| Out_of_bounds of int*int
-| Occupied of tile
+| Out_of_bounds
+| Occupied
 | Ok
+
 type enclosed_state = {
   tiles : coordinate list;
   score : int;
@@ -76,7 +75,7 @@ val is_free : board -> coordinate -> bool
   - On success, write [wall_ch] to the grid and decrement wall budget.
   - Return a new board state (functional update semantics).
 *)
-val place_wall : board -> coordinate -> board
+val place_wall : board -> coordinate -> (board, place_result) result
 
 (** [neighbors4 board coord] returns orthogonal in-bounds neighbors.
 

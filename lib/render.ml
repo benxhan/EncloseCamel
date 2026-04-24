@@ -1,28 +1,30 @@
+open Model
+
 let render_board _board =
   let () =
     Array.iter
       (fun row ->
         let tileprint = function
           | Camel ->
-              Printf.printf "%d "
-                (ANSITerminal.print_string
-                   [ ANSITerminal.red; ANSITerminal.on_black ]
-                   "C")
+              ANSITerminal.print_string
+                [ ANSITerminal.red; ANSITerminal.on_black ]
+                "C";
+              print_string " "
           | Water ->
-              Printf.printf "%d "
-                (ANSITerminal.print_string
-                   [ ANSITerminal.blue; ANSITerminal.on_black ]
-                   "W")
+              ANSITerminal.print_string
+                [ ANSITerminal.blue; ANSITerminal.on_black ]
+                "W";
+              print_string " "
           | Wall ->
-              Printf.printf "%d "
-                (ANSITerminal.print_string
-                   [ ANSITerminal.gray; ANSITerminal.on_black ]
-                   "B")
+              ANSITerminal.print_string
+                [ ANSITerminal.white; ANSITerminal.on_black ]
+                "B";
+              print_string " "
           | Blank ->
-              Printf.printf "%d "
-                (ANSITerminal.print_string
-                   [ ANSITerminal.green; ANSITerminal.on_black ]
-                   "G")
+              ANSITerminal.print_string
+                [ ANSITerminal.green; ANSITerminal.on_black ]
+                "G";
+              print_string " "
         in
         Array.iter tileprint row;
         print_newline ())
@@ -36,4 +38,4 @@ let print_place_result _result =
   match _result with
   | Out_of_bounds -> print_endline "Coordinates out of bounds! Try again"
   | Occupied -> print_endline "This spot is occupied! Try again"
-  | Ok _ -> ()
+  | Ok -> ()
