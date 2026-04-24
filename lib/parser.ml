@@ -32,67 +32,77 @@ let parse_error_to_string = function
   | Not_an_int token ->
       "Invalid integer: \"" ^ token ^ "\". Use [x,y] with integers."
 
-let load_board filename =
-  (* Read all lines *)
+let load_board (filename : string) : Model.board =
+  (* Intake lines *)
   let lines =
     let ic = open_in filename in
     let rec collect acc =
       match input_line ic with
-      | line -> collect (line :: acc)
+      | line              -> collect (line :: acc)
       | exception End_of_file -> close_in ic; List.rev acc
     in
     collect []
   in
 
-  (* Strip away spaces and fully empty lines *)
+  (* Split walls remaining from grid lines *)
+  let walls_remaining, grid_lines =
+    match lines with
+    | [] -> failwith "load_board: file is empty"
+    | hd :: tl ->
+      (match int_of_string_opt (String.trim hd) with
+       | None   -> failwith (Printf.sprintf
+                     "load_board: first line must be walls_remaining, got %S" hd)
+       | Some n -> n, tl)
+  in
+
+  (* Strip away spaces and empty lines *)  
   let rows =
-    lines
-    |> List.map (String.concat "" << String.split_on_char ' ')
+    grid_lines
+    |> List.map (fun s -> String.split_on_char ' ' s |> String.concat "")
     |> List.filter (fun s -> String.length s > 0)
   in
-  if rows = [] then failwith "load_board: file is empty"
+  if rows = [] then failwith "load_board: file contains no grid rows";
 
-  (* Check rectangularity *)
+  (* Check for basic rectangularity *)
   let width = String.length (List.hd rows) in
-  List.iteri (fun i row -> if String.length row <> width then
+  List.iteri (fun i row ->
+    let len = String.length row in
+    if len <> width then
       failwith (Printf.sprintf
-      "load_board: non-rectangular grid (row %d has $d tiles, expected $d)"
-      i (String.length row) width)
-      ) rows;
-  let height = list.length rows in
+        "load_board: non-rectangular grid (row %d has %d tiles, expected %d)"
+        i len width)
+  ) rows;
 
-  (* Map characters to tiles *)
+  (* Map Characters to tiles *)
   let camel_pos = ref None in
-  let wall_count = ref 0 in
 
   let char_to_tile row_idx col_idx ch =
     match ch with
     | 'C' ->
       (match !camel_pos with
-      | Some _ -> failwith "load_board: multiple camel tiles found"
-      | None -> camel_pos := Some {Model.x = col_idx; y = row_idx});
+       | Some _ -> failwith "load_board: multiple camel tiles found"
+       | None   -> camel_pos := Some { Model.x = col_idx; y = row_idx });
       Model.Camel
     | 'W' -> Model.Water
-    | 'B' -> incr wall_count; Model.Wall
+    | 'B' -> Model.Wall
     | 'G' -> Model.Blank
-    | c -> failwith (Printf.sprintf "load_board: invalid character '%c' at row %d, col %d
-      c row_idx col_idx") in
+    | c   -> failwith (Printf.sprintf
+                "load_board: invalid character '%c' at row %d, col %d"
+                c row_idx col_idx)
+  in
 
   let grid : Model.tile array array =
-    rows 
+    rows
     |> List.mapi (fun row_idx row ->
-      Array.init width (fun col_idx ->
-        char_to_tile row_idx col_idx row.[col_idx]))
+         Array.init width (fun col_idx ->
+           char_to_tile row_idx col_idx row.[col_idx]))
     |> Array.of_list
-      in
+  in
 
-    (* Validate the camel *)
+  (* Validate camel *)
+  (match !camel_pos with
+   | None -> failwith "load_board: no camel tile found"
+   | Some _ -> ());
 
-    let camel = 
-      match !camel_pos with
-      | None -> failwith "load_board: no camel tile found"
-      | Some c -> c
-    in
-
-    ignore camel;
-    { Model.grid; walls_remaining = !wall_count }
+  (* Assemble the board *)
+  { Model.grid; walls_remaining }
