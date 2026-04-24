@@ -1,6 +1,6 @@
 (test
  (name test_enclosecamel)
- (libraries EncloseCamel))
+ (libraries ounit2 EncloseCamel))
 
 (test
  (name test_model)
