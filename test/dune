@@ -1,3 +1,8 @@
 (test
  (name test_enclosecamel)
  (libraries EncloseCamel))
+
+(test
+ (name test_model)
+ (libraries ounit2 EncloseCamel))
+
