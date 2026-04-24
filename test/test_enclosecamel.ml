@@ -14,7 +14,7 @@ let test_render_board _ =
      Coordinates of the Camel are (_, _)\n\
      Number of walls remaining: 3"
   in
-  assert_equal expected result
+  assert_equal expected result ~printer:(fun s -> "\n" ^ s ^ "\n")
 
 let test_render_empty _ =
   let board = { grid = [| [||] |]; walls_remaining = 3 } in
@@ -22,7 +22,7 @@ let test_render_empty _ =
   let expected =
     "\nCoordinates of the Camel are (_, _)\nNumber of walls remaining: 3"
   in
-  assert_equal expected result
+  assert_equal expected result ~printer:(fun s -> "\n" ^ s ^ "\n")
 
 let tests =
   "test suite"

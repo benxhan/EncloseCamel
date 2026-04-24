@@ -80,7 +80,28 @@ let check_coord_placement _board _coord =
     let coord_tile = get_tile _board _coord in
     if coord_tile = Blank then Ok else Occupied
 
-let place_wall _board _coord = failwith "TODO: Model.place_wall"
+let place_wall board coord =
+  match check_coord_placement board coord with
+  | Out_of_bounds -> Error Out_of_bounds
+  | Occupied ->
+      (* if it's already a wall, remove it and refund the budget *)
+      if get_tile board coord = Wall then (
+        let new_board =
+          { board with walls_remaining = board.walls_remaining + 1 }
+        in
+        set_tile new_board coord Blank;
+        Ok new_board)
+      else Error Occupied
+  | Ok ->
+      (* if it's blank but we have no walls left, treat as occupied based on
+         tests *)
+      if board.walls_remaining <= 0 then Error Occupied
+      else
+        let new_board =
+          { board with walls_remaining = board.walls_remaining - 1 }
+        in
+        set_tile new_board coord Wall;
+        Ok new_board
 
 let neighbors4 _board _coord =
   let rec check_neighbor _board _coord dir (acc : coordinate list) =

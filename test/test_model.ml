@@ -7,6 +7,12 @@ let string_of_place_result = function
   | Occupied -> "Occupied"
   | Ok -> "Ok"
 
+let string_of_tile = function
+  | Camel -> "Camel"
+  | Water -> "Water"
+  | Wall -> "Wall"
+  | Blank -> "Blank"
+
 (* Helper to create a standard test board Camel is at (2,2), Water is at (1,1),
    and we manually add a Wall at (3,3) *)
 let setup_board () =
@@ -137,7 +143,63 @@ let reachable_tests =
            assert_equal ~printer:string_of_int 8 result.score );
        ]
 
+let place_wall_tests =
+  "place_wall tests"
+  >::: [
+         ( "place_out_of_bounds" >:: fun _ ->
+           let b = setup_board () in
+           match place_wall b { r = -1; c = 0 } with
+           | Error Out_of_bounds -> ()
+           | _ -> assert_failure "Expected Error Out_of_bounds" );
+         ( "place_on_camel_fails" >:: fun _ ->
+           let b = setup_board () in
+           match place_wall b { r = 2; c = 2 } with
+           | Error Occupied -> ()
+           | _ -> assert_failure "Expected Error Occupied" );
+         ( "place_on_water_fails" >:: fun _ ->
+           let b = setup_board () in
+           match place_wall b { r = 1; c = 1 } with
+           | Error Occupied -> ()
+           | _ -> assert_failure "Expected Error Occupied" );
+         ( "place_no_walls_budget" >:: fun _ ->
+           let b =
+             init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 } ~water:[]
+               ~walls_available:0
+           in
+           match place_wall b { r = 0; c = 0 } with
+           | Error Occupied -> ()
+           | _ -> assert_failure "Expected Error Occupied when out of budget" );
+         ( "place_on_blank_success" >:: fun _ ->
+           let b = setup_board () in
+           let r = 0 in
+           let c = 0 in
+           let og_walls = b.walls_remaining in
+           match place_wall b { r; c } with
+           | Ok new_board ->
+               assert_equal Wall
+                 (get_tile new_board { r; c })
+                 ~printer:string_of_tile ~msg:"Tile should be Wall";
+               assert_equal (og_walls - 1) new_board.walls_remaining
+                 ~printer:string_of_int ~msg:"Walls should decrement"
+           | _ -> assert_failure "Expected Ok" );
+         ( "place_remove_wall_success" >:: fun _ ->
+           let b = setup_board () in
+           let r = 3 in
+           let c = 3 in
+           (* already a Wall in setup_board *)
+           let og_walls = b.walls_remaining in
+           match place_wall b { r; c } with
+           | Ok new_board ->
+               assert_equal Blank
+                 (get_tile new_board { r; c })
+                 ~printer:string_of_tile ~msg:"Tile should return to Blank";
+               assert_equal (og_walls + 1) new_board.walls_remaining
+                 ~printer:string_of_int ~msg:"Walls should increment"
+           | _ -> assert_failure "Expected Ok" );
+       ]
+
 let all_tests =
-  "all model tests" >::: [ tests; neighbors4_tests; reachable_tests ]
+  "all model tests"
+  >::: [ tests; neighbors4_tests; reachable_tests; place_wall_tests ]
 
 let _ = run_test_tt_main all_tests
