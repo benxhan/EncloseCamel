@@ -46,8 +46,8 @@ let load_board (filename : string) : Model.board =
     collect []
   in
 
-  (* Split walls remaining from grid lines *)
-  let walls_remaining, grid_lines =
+  (* Split walls_remaining and max_score from grid lines *)
+  let walls_remaining, max_score, grid_lines =
     match lines with
     | [] -> failwith "load_board: file is empty"
     | hd :: tl -> (
@@ -56,7 +56,16 @@ let load_board (filename : string) : Model.board =
             failwith
               (Printf.sprintf
                  "load_board: first line must be walls_remaining, got %S" hd)
-        | Some n -> (n, tl))
+        | Some walls -> (
+            match tl with
+            | [] -> failwith "load_board: missing max_score on second line"
+            | hd2 :: rest -> (
+                match int_of_string_opt (String.trim hd2) with
+                | None ->
+                    failwith
+                      (Printf.sprintf
+                         "load_board: second line must be max_score, got %S" hd2)
+                | Some score -> (walls, score, rest))))
   in
 
   (* Strip away spaces and empty lines *)
@@ -113,4 +122,4 @@ let load_board (filename : string) : Model.board =
   | Some _ -> ());
 
   (* Assemble the board *)
-  { Model.grid; walls_remaining }
+  { Model.grid; walls_remaining; max_score }

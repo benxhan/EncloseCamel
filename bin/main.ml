@@ -101,6 +101,16 @@ let load_starting_board () =
       load_default_board ()
 
 let () =
+  (* New title page lol *)
+  print_string 
+  {|
+  ___________             .__                      _________                       .__   
+\_   _____/ ____   ____ |  |   ____  ______ ____ \_   ___ \_____    _____   ____ |  |  
+ |    __)_ /    \_/ ___\|  |  /  _ \/  ___// __ \/    \  \/\__  \  /     \_/ __ \|  |  
+ |        \   |  \  \___|  |_(  <_> )___ \\  ___/\     \____/ __ \|  Y Y  \  ___/|  |__
+/_______  /___|  /\___  >____/\____/____  >\___  >\______  (____  /__|_|  /\___  >____/
+        \/     \/     \/                \/     \/        \/     \/      \/     \/      
+  |};
   (* Create the initial fixed-size board for the first playable version. *)
   let board = load_starting_board () in
   (* Display startup guidance before entering the interactive loop. *)

@@ -23,6 +23,7 @@ type tile =
 type board = {
   grid : tile array array;
   walls_remaining : int;
+  max_score : int;
 }
 
 (** The outcome of a [place_wall] attempt.
@@ -35,10 +36,21 @@ type place_result =
   | Occupied
   | Ok
 
-type enclosed_state = {
-  tiles : bool array array;
-  score : int;
-}
+(** The result of a reachability query.
+    - [Open] — the camel can reach water tiles, so the game is not yet won.
+    - [Enclosed] — the camel is fully enclosed away from water; the game is won.
+      Contains:
+    - [tiles] — a 2-D boolean array matching the board dimensions, where [true]
+      indicates a tile reachable from the camel and [false] indicates an
+      unreachable tile.
+    - [score] — the number of reachable tiles that are either [Camel] or
+      [Blank], representing the player's score for this win. *)
+type enclosed_state =
+  | Open
+  | Enclosed of {
+      tiles : bool array array;
+      score : int;
+    }
 
 (** The result of a reachability query originating from the camel's position.
     - [tiles] — every coordinate reachable from the camel via 4-directional
@@ -51,6 +63,7 @@ val init :
   camel:coordinate ->
   water:coordinate list ->
   walls_available:int ->
+  max_score:int ->
   board
 
 (** [init ~width ~height ~camel ~water ~walls_available] constructs an initial
@@ -107,10 +120,13 @@ val place_wall : board -> coordinate -> (board, place_result) result
     - Exclude out-of-bounds coordinates. *)
 val neighbors4 : board -> coordinate -> coordinate list
 
-(** [reachable_from_camel board] returns unique tiles reachable from camel.
+(** [reachable_from_camel board camel_coord] returns the enclosed state of the
+    camel.
 
     Expected behavior:
-    - Traverse by 4-direction movement through free tiles.
-    - Include the camel tile in the output. Requires:
-    - [coordinate] is the location of camel. *)
+    - Traverse by 4-direction movement through [Blank] tiles.
+    - If the reachable area touches the edge of the map, return [Open].
+    - Otherwise, return [Enclosed {tiles; score}] where [tiles] marks all
+      reachable coordinates (including the camel itself) and [score] is the
+      count of those reachable tiles. *)
 val reachable_from_camel : board -> coordinate -> enclosed_state
