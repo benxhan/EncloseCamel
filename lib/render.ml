@@ -31,13 +31,14 @@ let render_board _board =
                 "G";
               print_string " "
             | Enclosed area -> 
-              match Some area.tiles.(r_ind).(c_ind) with 
-              | Some tile -> 
+              let check_tile = area.tiles.(r_ind).(c_ind) in 
+              match check_tile with 
+              | true -> 
               ANSITerminal.print_string
                 [ ANSITerminal.yellow; ANSITerminal.on_black ]
                 "G";
                 print_string " "
-              | None -> ANSITerminal.print_string
+              | false -> ANSITerminal.print_string
                 [ ANSITerminal.green; ANSITerminal.on_black ]
                 "G";
                 print_string " "
