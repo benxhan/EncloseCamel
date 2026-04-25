@@ -12,6 +12,7 @@ type tile =
 type board = {
   grid : tile array array;
   walls_remaining : int;
+  max_score : int;
 }
 
 type place_result =
@@ -24,7 +25,7 @@ type enclosed_state = {
   score : int;
 }
 
-let init ~width ~height ~camel ~water ~walls_available =
+let init ~width ~height ~camel ~water ~walls_available ~max_score =
   (* Dimension guard *)
   if width <= 0 || height <= 0 then
     failwith "init: width and height must be positive";
@@ -57,7 +58,7 @@ let init ~width ~height ~camel ~water ~walls_available =
   List.iter (fun { r; c } -> grid.(r).(c) <- Water) water;
   grid.(camel.r).(camel.c) <- Camel;
 
-  { grid; walls_remaining = walls_available }
+  { grid; walls_remaining = walls_available; max_score }
 
 (* [in_bounds board coord] returns [true] if [coord] is on the board.
 

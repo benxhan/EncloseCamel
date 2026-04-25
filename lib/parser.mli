@@ -32,8 +32,8 @@ val parse_error_to_string : parse_error -> string
     - Treat each line as one row and build a [tile array array] for
       [board.grid].
     - Infer [board.camel] from the position of the single ['C'] character.
-    - Infer [board.walls_remaining] by reading then number at the end of the
-      file
+    - Infer [board.walls_remaining] by reading the first line of the file.
+    - Infer [board.max_score] by reading the second line of the file.
     - Raise [Failure] with a descriptive message on any of the following:
     - The file does not exist or cannot be opened.
     - The file is empty (zero non-empty lines).

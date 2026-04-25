@@ -5,7 +5,11 @@ open Render
 
 let test_render_board _ =
   let board1 =
-    { grid = [| [| Camel; Blank |]; [| Blank; Water |] |]; walls_remaining = 3 }
+    {
+      grid = [| [| Camel; Blank |]; [| Blank; Water |] |];
+      walls_remaining = 3;
+      max_score = 10;
+    }
   in
   let result = str_render_board board1 in
   let expected =
@@ -17,7 +21,7 @@ let test_render_board _ =
   assert_equal expected result ~printer:(fun s -> "\n" ^ s ^ "\n")
 
 let test_render_empty _ =
-  let board = { grid = [| [||] |]; walls_remaining = 3 } in
+  let board = { grid = [| [||] |]; walls_remaining = 3; max_score = 10 } in
   let result = str_render_board board in
   let expected =
     "\nCoordinates of the Camel are (_, _)\nNumber of walls remaining: 3"

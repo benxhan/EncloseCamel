@@ -23,6 +23,7 @@ type tile =
 type board = {
   grid : tile array array;
   walls_remaining : int;
+  max_score : int;
 }
 
 (** The outcome of a [place_wall] attempt.
@@ -51,6 +52,7 @@ val init :
   camel:coordinate ->
   water:coordinate list ->
   walls_available:int ->
+  max_score:int ->
   board
 
 (** [init ~width ~height ~camel ~water ~walls_available] constructs an initial

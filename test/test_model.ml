@@ -19,7 +19,7 @@ let setup_board () =
   let b =
     init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 }
       ~water:[ { r = 1; c = 1 } ]
-      ~walls_available:10
+      ~walls_available:10 ~max_score:0
   in
   set_tile b { r = 3; c = 3 } Wall;
   b
@@ -112,7 +112,7 @@ let reachable_tests =
            let b =
              init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 }
                ~water:[ { r = 0; c = 0 } ]
-               ~walls_available:10
+               ~walls_available:10 ~max_score:0
            in
            (* Box the camel completely in walls *)
            set_tile b { r = 1; c = 2 } Wall;
@@ -131,7 +131,7 @@ let reachable_tests =
            let b =
              init ~width:3 ~height:3 ~camel:{ r = 1; c = 1 }
                ~water:[ { r = 2; c = 2 } ]
-               ~walls_available:10
+               ~walls_available:10 ~max_score:0
            in
            let result = reachable_from_camel b { r = 1; c = 1 } in
            (* The 3x3 board has 9 tiles total. 1 Camel + 1 Water = 2. Blank
@@ -164,7 +164,7 @@ let place_wall_tests =
          ( "place_no_walls_budget" >:: fun _ ->
            let b =
              init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 } ~water:[]
-               ~walls_available:0
+               ~walls_available:0 ~max_score:0
            in
            match place_wall b { r = 0; c = 0 } with
            | Error Occupied -> ()
