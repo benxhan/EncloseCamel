@@ -1,13 +1,12 @@
 open Model
 
 let render_board _board =
+  let win_state = reachable_from_camel _board _board.camel_loc in 
   let () =
     Array.iteri
       (fun r_ind row ->
 
         let tileprint c_ind tile = 
-
-          let win_state = reachable_from_camel _board {r = r_ind; c = c_ind} in 
           
           match tile with
           | Camel ->
@@ -25,22 +24,29 @@ let render_board _board =
                 [ ANSITerminal.white; ANSITerminal.on_black ]
                 "B";
               print_string " "
-          | Blank -> 
-            match win_state with
+          | Blank -> match win_state with
             | Open -> 
               ANSITerminal.print_string
                 [ ANSITerminal.green; ANSITerminal.on_black ]
                 "G";
               print_string " "
-            | Enclosed _ -> ANSITerminal.print_string
+            | Enclosed area -> 
+              match Some area.tiles.(r_ind).(c_ind) with 
+              | Some tile -> 
+              ANSITerminal.print_string
                 [ ANSITerminal.yellow; ANSITerminal.on_black ]
                 "G";
+                print_string " "
+              | None -> ANSITerminal.print_string
+                [ ANSITerminal.green; ANSITerminal.on_black ]
+                "G";
+                print_string " "
         in
         Array.iteri tileprint row;
         print_newline ())
       _board.grid 
   in
-  let () = print_endline "Coordinates of the Camel are (_, _)" in
+  let () = print_endline ("Coordinates of the Camel are ("^(string_of_int _board.camel_loc.r)^", "^(string_of_int _board.camel_loc.c)^")") in
   print_endline
     ("Number of walls remaining: " ^ string_of_int _board.walls_remaining)
 
