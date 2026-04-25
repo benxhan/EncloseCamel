@@ -24,6 +24,7 @@ type board = {
   grid : tile array array;
   walls_remaining : int;
   max_score : int;
+  camel_loc : coordinate
 }
 
 (** The outcome of a [place_wall] attempt.

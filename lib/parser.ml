@@ -91,13 +91,12 @@ let load_board (filename : string) : Model.board =
 
   (* Map Characters to tiles *)
   let camel_pos = ref None in
-
   let char_to_tile row_idx col_idx ch =
     match ch with
     | 'C' ->
         (match !camel_pos with
         | Some _ -> failwith "load_board: multiple camel tiles found"
-        | None -> camel_pos := Some { Model.r = col_idx; c = row_idx });
+        | None -> camel_pos := Some { Model.r = row_idx; c = col_idx });
         Model.Camel
     | 'W' -> Model.Water
     | 'B' -> Model.Wall
@@ -107,7 +106,6 @@ let load_board (filename : string) : Model.board =
           (Printf.sprintf "load_board: invalid character '%c' at row %d, col %d"
              c row_idx col_idx)
   in
-
   let grid : Model.tile array array =
     rows
     |> List.mapi (fun row_idx row ->
@@ -115,11 +113,12 @@ let load_board (filename : string) : Model.board =
             char_to_tile row_idx col_idx row.[col_idx]))
     |> Array.of_list
   in
-
-  (* Validate camel *)
-  (match !camel_pos with
-  | None -> failwith "load_board: no camel tile found"
-  | Some _ -> ());
-
+  (* Validate and unwrap camel *)
+  (* Validate and unwrap camel *)
+  let camel_loc =
+    match !camel_pos with
+    | None -> failwith "load_board: no camel tile found"
+    | Some coord -> coord
+  in
   (* Assemble the board *)
-  { Model.grid; walls_remaining; max_score }
+  { Model.grid; walls_remaining; max_score; camel_loc }

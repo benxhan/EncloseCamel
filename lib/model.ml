@@ -13,6 +13,7 @@ type board = {
   grid : tile array array;
   walls_remaining : int;
   max_score : int;
+  camel_loc : coordinate
 }
 
 type place_result =
@@ -60,7 +61,7 @@ let init ~width ~height ~camel ~water ~walls_available ~max_score =
   List.iter (fun { r; c } -> grid.(r).(c) <- Water) water;
   grid.(camel.r).(camel.c) <- Camel;
 
-  { grid; walls_remaining = walls_available; max_score }
+  { grid; walls_remaining = walls_available; max_score; camel_loc = camel }
 
 (* [in_bounds board coord] returns [true] if [coord] is on the board.
 
