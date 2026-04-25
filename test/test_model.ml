@@ -120,13 +120,16 @@ let reachable_tests =
            set_tile b { r = 2; c = 1 } Wall;
            set_tile b { r = 2; c = 3 } Wall;
            let result = reachable_from_camel b { r = 2; c = 2 } in
-           (* The camel can only reach its own tile *)
-           assert_coords_equal
-             [ { r = 2; c = 2 } ]
-             (coords_of_bool_array result.tiles);
-           (* The score represents the area of the enclosure: just the camel
-              tile (1) *)
-           assert_equal ~printer:string_of_int 1 result.score );
+           match result with
+           | Enclosed { tiles; score } ->
+               (* The camel can only reach its own tile *)
+               assert_coords_equal
+                 [ { r = 2; c = 2 } ]
+                 (coords_of_bool_array tiles);
+               (* The score represents the area of the enclosure: just the camel
+                  tile (1) *)
+               assert_equal ~printer:string_of_int 1 score
+           | Open -> assert_failure "Expected Enclosed, but got Open" );
          ( "camel_free_to_reach_everything" >:: fun _ ->
            let b =
              init ~width:3 ~height:3 ~camel:{ r = 1; c = 1 }
@@ -134,13 +137,12 @@ let reachable_tests =
                ~walls_available:10 ~max_score:0
            in
            let result = reachable_from_camel b { r = 1; c = 1 } in
-           (* The 3x3 board has 9 tiles total. 1 Camel + 1 Water = 2. Blank
-              tiles = 7. The camel can reach all blank tiles + its own tile. It
-              CANNOT traverse Water or Walls. *)
-           assert_equal ~printer:string_of_int 8
-             (List.length (coords_of_bool_array result.tiles));
-           (* The complete board minus the water tile gives a score of 8 *)
-           assert_equal ~printer:string_of_int 8 result.score );
+           match result with
+           | Open -> ()
+           | Enclosed _ ->
+               assert_failure
+                 "Expected Open because camel can reach the edge bounding the \
+                  board" );
        ]
 
 let place_wall_tests =

@@ -20,10 +20,12 @@ type place_result =
   | Occupied
   | Ok
 
-type enclosed_state = {
-  tiles : bool array array;
-  score : int;
-}
+type enclosed_state =
+  | Open
+  | Enclosed of {
+      tiles : bool array array;
+      score : int;
+    }
 
 let init ~width ~height ~camel ~water ~walls_available ~max_score =
   (* Dimension guard *)
@@ -133,15 +135,21 @@ let reachable_from_camel _board camel_coord =
   let visited = Array.init height (fun _ -> Array.make width false) in
   visited.(camel_coord.r).(camel_coord.c) <- true;
   let _score = ref 1 in
+  let touches_edge = ref false in
+  let is_on_edge r c = r = 0 || r = height - 1 || c = 0 || c = width - 1 in
   let rec dfs _coord =
-    let neighbors = neighbors4 _board _coord in
-    List.iter
-      (fun (crd : coordinate) ->
-        if not visited.(crd.r).(crd.c) then (
-          visited.(crd.r).(crd.c) <- true;
-          _score := !_score + 1;
-          dfs crd))
-      neighbors
+    if not !touches_edge then
+      begin if is_on_edge _coord.r _coord.c then touches_edge := true
+      else
+        let neighbors = neighbors4 _board _coord in
+        List.iter
+          (fun (crd : coordinate) ->
+            if (not !touches_edge) && not visited.(crd.r).(crd.c) then (
+              visited.(crd.r).(crd.c) <- true;
+              _score := !_score + 1;
+              dfs crd))
+          neighbors
+      end
   in
   dfs camel_coord;
-  { tiles = visited; score = !_score }
+  if !touches_edge then Open else Enclosed { tiles = visited; score = !_score }

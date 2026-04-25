@@ -15,7 +15,7 @@ pm:
   name: Sophie Cheng
   netid: ssc284
 # Set to false if you don't want your gallery entry to be public.
-publish: false
+publish: true
 title: "Enclose Camel"
 git-repo: "https://github.coecis.cornell.edu/dl2276/EncloseCamel"
 demo-video-url: #TODO
