@@ -2,9 +2,14 @@ open Model
 
 let render_board _board =
   let () =
-    Array.iter
-      (fun row ->
-        let tileprint = function
+    Array.iteri
+      (fun r_ind row ->
+
+        let tileprint c_ind tile = 
+
+          let win_state = reachable_from_camel _board {r = r_ind; c = c_ind} in 
+          
+          match tile with
           | Camel ->
               ANSITerminal.print_string
                 [ ANSITerminal.red; ANSITerminal.on_black ]
@@ -20,15 +25,20 @@ let render_board _board =
                 [ ANSITerminal.white; ANSITerminal.on_black ]
                 "B";
               print_string " "
-          | Blank ->
+          | Blank -> 
+            match win_state with
+            | Open -> 
               ANSITerminal.print_string
                 [ ANSITerminal.green; ANSITerminal.on_black ]
                 "G";
               print_string " "
+            | Enclosed _ -> ANSITerminal.print_string
+                [ ANSITerminal.yellow; ANSITerminal.on_black ]
+                "G";
         in
-        Array.iter tileprint row;
+        Array.iteri tileprint row;
         print_newline ())
-      _board.grid
+      _board.grid 
   in
   let () = print_endline "Coordinates of the Camel are (_, _)" in
   print_endline
