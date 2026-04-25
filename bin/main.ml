@@ -24,9 +24,19 @@ let rec loop board =
         (* Attempt to place a rock and branch on the result. *)
         match place_wall board coord with
         | Ok next_board ->
-            (* Successful move: confirm and continue with updated state. *)
-            print_endline "Placed rock.";
-            loop next_board
+            let state = reachable_from_camel next_board in
+            (match state with
+            | Open -> 
+                print_endline "Placed rock.";
+                loop next_board
+            | Enclosed { score; _ } ->
+                if score = next_board.max_score then begin
+                  print_endline ("You won! Max score of " ^ string_of_int score ^ " achieved.");
+                  loop next_board
+                end else begin
+                  print_endline ("Score: " ^ string_of_int score);
+                  loop next_board
+                end)
         | Error bad_move ->
             (* Failed move: explain why and continue with current state. *)
             print_place_result bad_move;

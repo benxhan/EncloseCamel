@@ -1,7 +1,7 @@
 open Model
 
 let render_board _board =
-  let win_state = reachable_from_camel _board _board.camel_loc in 
+  let win_state = reachable_from_camel _board in 
   let () =
     Array.iteri
       (fun r_ind row ->
