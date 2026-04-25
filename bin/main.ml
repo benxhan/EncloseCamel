@@ -20,9 +20,9 @@ let rec loop board =
         (* Report parse errors and keep the same board state. *)
         print_endline (parse_error_to_string err);
         loop board
-    | Ok coord ->
+    | Ok coord -> (
         (* Attempt to place a rock and branch on the result. *)
-        (match place_wall board coord with
+        match place_wall board coord with
         | Ok next_board ->
             (* Successful move: confirm and continue with updated state. *)
             print_endline "Placed rock.";
@@ -32,9 +32,77 @@ let rec loop board =
             print_place_result bad_move;
             loop board)
 
+let default_level_file = "data/basicworld.txt"
+
+(* [write_default_level_file ()] overwrites [default_level_file] with the
+   original default board layout. Used when [data/basicworld.txt] is missing or
+   cannot be parsed. *)
+let write_default_level_file () =
+  let original_file = open_out default_level_file in
+  output_string original_file
+    "2\n\
+     C G G G G G G G G G\n\
+     G G G G G G G G W G\n\
+     G G G G G G G W G G\n\
+     G G G G G G W G G G\n\
+     G G G G G W G G G G\n\
+     G G G G W G G G G G\n\
+     G G G W G G G G G G\n\
+     G G W G G G G G G G\n\
+     G W G G G G G G G G\n\
+     G G G G G G G G G G\n";
+  close_out original_file
+
+(* [load_default_board ()] returns the default board, or calls
+   [write_default_level_file ()] if no default board exists*)
+let load_default_board () =
+  if not (Sys.file_exists default_level_file) then (
+    print_endline "Default board file not found. Creating default board.";
+    write_default_level_file ());
+
+  try Parser.load_board default_level_file
+  with exn ->
+    print_endline
+      ("Default board is invalid. Recreating board: " ^ Printexc.to_string exn);
+    write_default_level_file ();
+    load_board default_level_file
+
+(* [load_starting_board ()] returns the requested board or falls back to the
+   default board when loading fails. *)
+let load_starting_board () =
+  match Array.to_list Sys.argv with
+  | [ program_name ] ->
+      print_endline "No level file provided. Using default board";
+      print_endline
+        "To input a board, please use: dune exec bin/main.exe -- <level-file>";
+      load_default_board ()
+  | [ program_name; filename ] -> (
+      try
+        print_endline ("Loading level file: " ^ filename);
+        Parser.load_board filename
+      with
+      | Sys_error msg ->
+          print_endline ("Could not load level file: " ^ msg);
+          print_endline "Using default board instead";
+          load_default_board ()
+      | Failure msg ->
+          print_endline ("Error reading file: " ^ msg);
+          print_endline "Using default board instead";
+          load_default_board ()
+      | exn ->
+          print_endline
+            ("Unexpected error while reading file: " ^ Printexc.to_string exn);
+          print_endline "Using default board instead";
+          load_default_board ())
+  | _ ->
+      print_endline "Unexpected Input. Using default board instead.";
+      print_endline
+        "To input a board, please use: dune exec bin/main.exe -- <level-file>";
+      load_default_board ()
+
 let () =
   (* Create the initial fixed-size board for the first playable version. *)
-  let board = init ~width:10 ~height:8 ~camel:{r=0;c=0} ~water:[] ~walls_available:10 in
+  let board = load_starting_board () in
   (* Display startup guidance before entering the interactive loop. *)
   print_endline "ASCII Rock Map";
   print_endline "Coordinates are zero-based. Example: 3,4";
