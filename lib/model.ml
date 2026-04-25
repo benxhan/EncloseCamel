@@ -74,6 +74,10 @@ let is_free _board _coord =
   let coord_tile = get_tile _board _coord in
   coord_tile <> Water && coord_tile <> Wall
 
-let place_wall _board _coord = failwith "TODO: Model.place_wall"
+let place_wall _board _coord = match get_tile _board _coord with 
+| Blank -> failwith "TODO: Model.neighbors4"
+| Wall -> failwith "TODO: Model.neighbors4"
+| Camel -> failwith "TODO: Model.neighbors4"
+| Water -> failwith "TODO: Model.neighbors4"
 let neighbors4 _board _coord = failwith "TODO: Model.neighbors4"
 let reachable_from_camel _board = failwith "TODO: Model.reachable_from_camel"
