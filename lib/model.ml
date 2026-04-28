@@ -13,7 +13,7 @@ type board = {
   grid : tile array array;
   walls_remaining : int;
   max_score : int;
-  camel_loc : coordinate
+  camel_loc : coordinate;
 }
 
 type place_result =
@@ -128,13 +128,13 @@ let neighbors4 _board _coord =
   in
   check_neighbor _board _coord 0 []
 
-let reachable_from_camel _board camel_coord =
+let reachable_from_camel _board =
   let _grid = _board.grid in
   let height = Array.length _grid in
   let width = Array.length _grid.(0) in
   (* Initialize visited array to track seen tiles *)
   let visited = Array.init height (fun _ -> Array.make width false) in
-  visited.(camel_coord.r).(camel_coord.c) <- true;
+  visited.(_board.camel_loc.r).(_board.camel_loc.c) <- true;
   let _score = ref 1 in
   let touches_edge = ref false in
   let is_on_edge r c = r = 0 || r = height - 1 || c = 0 || c = width - 1 in
@@ -152,5 +152,5 @@ let reachable_from_camel _board camel_coord =
           neighbors
       end
   in
-  dfs camel_coord;
+  dfs _board.camel_loc;
   if !touches_edge then Open else Enclosed { tiles = visited; score = !_score }

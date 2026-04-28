@@ -24,7 +24,7 @@ type board = {
   grid : tile array array;
   walls_remaining : int;
   max_score : int;
-  camel_loc : coordinate
+  camel_loc : coordinate;
 }
 
 (** The outcome of a [place_wall] attempt.
@@ -121,8 +121,7 @@ val place_wall : board -> coordinate -> (board, place_result) result
     - Exclude out-of-bounds coordinates. *)
 val neighbors4 : board -> coordinate -> coordinate list
 
-(** [reachable_from_camel board camel_coord] returns the enclosed state of the
-    camel.
+(** [reachable_from_camel board] returns the enclosed state of the camel.
 
     Expected behavior:
     - Traverse by 4-direction movement through [Blank] tiles.
@@ -130,4 +129,4 @@ val neighbors4 : board -> coordinate -> coordinate list
     - Otherwise, return [Enclosed {tiles; score}] where [tiles] marks all
       reachable coordinates (including the camel itself) and [score] is the
       count of those reachable tiles. *)
-val reachable_from_camel : board -> coordinate -> enclosed_state
+val reachable_from_camel : board -> enclosed_state

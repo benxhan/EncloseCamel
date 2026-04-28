@@ -119,7 +119,7 @@ let reachable_tests =
            set_tile b { r = 3; c = 2 } Wall;
            set_tile b { r = 2; c = 1 } Wall;
            set_tile b { r = 2; c = 3 } Wall;
-           let result = reachable_from_camel b { r = 2; c = 2 } in
+           let result = reachable_from_camel b in
            match result with
            | Enclosed { tiles; score } ->
                (* The camel can only reach its own tile *)
@@ -136,7 +136,7 @@ let reachable_tests =
                ~water:[ { r = 2; c = 2 } ]
                ~walls_available:10 ~max_score:0
            in
-           let result = reachable_from_camel b { r = 1; c = 1 } in
+           let result = reachable_from_camel b in
            match result with
            | Open -> ()
            | Enclosed _ ->
