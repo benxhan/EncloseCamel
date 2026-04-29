@@ -11,37 +11,37 @@ let render_board _board =
           match tile with
           | Camel ->
               ANSITerminal.print_string
-                [ ANSITerminal.red; ANSITerminal.on_black ]
+                [ ANSITerminal.white; ANSITerminal.on_red ]
                 "C";
-              print_string " "
+              (* print_string " " *)
           | Water ->
               ANSITerminal.print_string
-                [ ANSITerminal.blue; ANSITerminal.on_black ]
+                [ ANSITerminal.white; ANSITerminal.on_blue ]
                 "W";
-              print_string " "
+              (* print_string " " *)
           | Wall ->
               ANSITerminal.print_string
                 [ ANSITerminal.white; ANSITerminal.on_black ]
                 "B";
-              print_string " "
+              (* print_string " " *)
           | Blank -> match win_state with
             | Open -> 
               ANSITerminal.print_string
-                [ ANSITerminal.green; ANSITerminal.on_black ]
+                [ ANSITerminal.white; ANSITerminal.on_green ]
                 "G";
-              print_string " "
+              (* print_string " " *)
             | Enclosed area -> 
               let check_tile = area.tiles.(r_ind).(c_ind) in 
               match check_tile with 
               | true -> 
               ANSITerminal.print_string
-                [ ANSITerminal.yellow; ANSITerminal.on_black ]
+                [ ANSITerminal.black; ANSITerminal.on_yellow ]
                 "G";
-                print_string " "
+                (* print_string " " *)
               | false -> ANSITerminal.print_string
-                [ ANSITerminal.green; ANSITerminal.on_black ]
+                [ ANSITerminal.white; ANSITerminal.on_green ]
                 "G";
-                print_string " "
+                (* print_string " " *)
         in
         Array.iteri tileprint row;
         print_newline ())
