@@ -8,6 +8,16 @@
     - Avoid mutating any game state; rendering is display-only. *)
 val render_board : Model.board -> unit
 
+val tile_size : int
+
+val info_panel_height : int
+
+val init_gui_textures : unit -> unit
+
+val unload_gui_textures : unit -> unit
+
+val draw_board_gui : Model.board -> unit
+
 val str_render_board : Model.board -> string
 
 (** [print_place_result result] prints feedback for failed placements.

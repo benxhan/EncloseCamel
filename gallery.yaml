@@ -18,7 +18,7 @@ pm:
 publish: true
 title: "Enclose Camel"
 git-repo: "https://github.coecis.cornell.edu/dl2276/EncloseCamel"
-demo-video-url: #TODO
+demo-video-url: "https://youtu.be/4a2201ko3dM"
 desc: >
   EncloseCamel (inspired by enclose.horse) is a puzzle game in which you build walls
   around a camel on a grid. The goal is to trap the camel inside the LARGEST possible
