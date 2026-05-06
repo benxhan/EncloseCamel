@@ -77,7 +77,7 @@ let draw_tile_texture texture r c =
   let y = r * tile_size in
   let scale = float tile_size /. float (Texture.width texture) in
   draw_texture_ex texture (Vector2.create (float x) (float y)) 0.0 scale Color.white;
-  draw_rectangle_lines x y tile_size tile_size Color.black
+  draw_rectangle_lines x y tile_size tile_size (Color.create 255 255 255 20)
 
 let draw_board_gui board =
   let { camel; water; wall; blank; enclosed_blank; corn_camel } = load_gui_textures () in
