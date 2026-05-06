@@ -11,7 +11,7 @@ let test_render_board _ =
       bonus_walls = ref 0;
       max_score = 10;
       camel_loc = { r = 0; c = 0 };
-      bonused_logs = ref [];
+      consumed_lava_buckets = ref [];
     }
   in
   let result = str_render_board board1 in
@@ -31,7 +31,7 @@ let test_render_empty _ =
       bonus_walls = ref 0;
       max_score = 10;
       camel_loc = { r = 0; c = 0 };
-      bonused_logs = ref [];
+      consumed_lava_buckets = ref [];
     }
   in
   let result = str_render_board board in
@@ -40,11 +40,14 @@ let test_render_empty _ =
   in
   assert_equal expected result ~printer:(fun s -> "\n" ^ s ^ "\n")
 
-let tests =
-  "test suite"
+let suite =
+  "EncloseCamel Master Test Suite"
   >::: [
          "render_board basic" >:: test_render_board;
          "render_board empty" >:: test_render_empty;
+         Test_model.all_tests;
+         Test_parser.tests;
+         Test_render.tests;
        ]
 
-let _ = run_test_tt_main tests
+let _ = run_test_tt_main suite

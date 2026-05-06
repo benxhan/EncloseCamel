@@ -8,8 +8,28 @@ type tile =
   | Water
   | Wall
   | Blank
-  | Logs
+  | Cherry
+  | Bees
+  | GoldenApple
+  | Portal of int
+  | LavaBucket
 
+type tile_properties = {
+  points : int;
+  walkable : bool;
+  file_char : char;
+}
+
+let properties_of = function
+  | Blank -> { points = 1; walkable = true; file_char = 'G' }
+  | Cherry -> { points = 5; walkable = true; file_char = 'R' }
+  | Bees -> { points = -5; walkable = true; file_char = 'E' }
+  | GoldenApple -> { points = 10; walkable = true; file_char = 'A' }
+  | Portal _ -> { points = 1; walkable = true; file_char = 'P' }
+  | LavaBucket -> { points = 1; walkable = true; file_char = 'L' }
+  | Camel -> { points = 0; walkable = true; file_char = 'C' }
+  | Water -> { points = 0; walkable = false; file_char = 'W' }
+  | Wall -> { points = 0; walkable = false; file_char = 'B' }
 
 type board = {
   grid : tile array array;
@@ -17,7 +37,7 @@ type board = {
   bonus_walls : int ref;
   max_score : int;
   camel_loc : coordinate;
-  bonused_logs : coordinate list ref;
+  consumed_lava_buckets : coordinate list ref;
 }
 
 type place_result =
@@ -33,7 +53,8 @@ type enclosed_state =
       bonus_walls : int;
     }
 
-let init ~width ~height ~camel ~water ~logs ~walls_available ~max_score =
+let init ~width ~height ~camel ~water ~lava_buckets ~walls_available ~max_score
+    =
   (* Dimension guard *)
   if width <= 0 || height <= 0 then
     failwith "init: width and height must be positive";
@@ -59,9 +80,9 @@ let init ~width ~height ~camel ~water ~logs ~walls_available ~max_score =
   in
   if has_duplicate water then failwith "init: duplicate water coordinates";
 
-  (* Validate logs to all be in bounds and have no repeats*)
-  val_list_inbounds logs;
-  if has_duplicate logs then failwith "init: duplicate log coordinates";
+  (* Validate lava_buckets to all be in bounds and have no repeats*)
+  val_list_inbounds lava_buckets;
+  if has_duplicate lava_buckets then failwith "init: duplicate log coordinates";
 
   (* Camel must not share a tile with water *)
   if List.mem camel water then
@@ -70,7 +91,7 @@ let init ~width ~height ~camel ~water ~logs ~walls_available ~max_score =
   (* Build the grid *)
   let grid = Array.init height (fun _ -> Array.make width Blank) in
   List.iter (fun { r; c } -> grid.(r).(c) <- Water) water;
-  List.iter (fun { r; c } -> grid.(r).(c) <- Logs) logs;
+  List.iter (fun { r; c } -> grid.(r).(c) <- LavaBucket) lava_buckets;
   grid.(camel.r).(camel.c) <- Camel;
 
   {
@@ -79,7 +100,7 @@ let init ~width ~height ~camel ~water ~logs ~walls_available ~max_score =
     bonus_walls = ref 0;
     max_score;
     camel_loc = camel;
-    bonused_logs = ref [];
+    consumed_lava_buckets = ref [];
   }
 
 (* [in_bounds board coord] returns [true] if [coord] is on the board.
@@ -101,7 +122,7 @@ let check_coord_placement_log _board _coord =
   if not (in_bounds _board _coord) then Out_of_bounds
   else
     let coord_tile = get_tile _board _coord in
-    if coord_tile = Blank || coord_tile = Logs then Ok else Occupied
+    if coord_tile = Blank || coord_tile = LavaBucket then Ok else Occupied
 
 let check_coord_placement _board _coord =
   let in_bounds (_board : board) (_coord : coordinate) =
@@ -176,23 +197,40 @@ let reachable_from_camel _board =
         List.iter
           (fun (crd : coordinate) ->
             if (not !touches_edge) && not visited.(crd.r).(crd.c) then
-              match _board.grid.(crd.r).(crd.c) with
-              | Blank ->
-                  visited.(crd.r).(crd.c) <- true;
-                  _score := !_score + 1;
-                  dfs crd
-              | Logs ->
-                  visited.(crd.r).(crd.c) <- true;
-                  (* Only count bonus if this log hasn't been bonused yet *)
-                  if not (List.mem crd !(_board.bonused_logs)) then
-                    enclosed_bonus_walls := !enclosed_bonus_walls + 3
-              | Camel ->
-                  visited.(crd.r).(crd.c) <- true;
-                  dfs crd
-              | Water | Wall -> ())
+              let tile = _board.grid.(crd.r).(crd.c) in
+              let props = properties_of tile in
+              if props.walkable then begin
+                visited.(crd.r).(crd.c) <- true;
+                _score := !_score + props.points;
+
+                (* specific hooks per tile type *)
+                (match tile with
+                | LavaBucket ->
+                    (* Only count bonus if this tile hasn't been bonused yet *)
+                    if not (List.mem crd !(_board.consumed_lava_buckets)) then
+                      enclosed_bonus_walls := !enclosed_bonus_walls + 3
+                | Portal id ->
+                    for r_idx = 0 to height - 1 do
+                      for c_idx = 0 to width - 1 do
+                        if (not !touches_edge) && not visited.(r_idx).(c_idx)
+                        then
+                          match _board.grid.(r_idx).(c_idx) with
+                          | Portal match_id when match_id = id ->
+                              visited.(r_idx).(c_idx) <- true;
+                              let p_props = properties_of (Portal match_id) in
+                              _score := !_score + p_props.points;
+                              dfs { r = r_idx; c = c_idx }
+                          | _ -> ()
+                      done
+                    done
+                | _ -> ());
+
+                dfs crd
+              end)
           neighbors
       end
   in
+
   dfs _board.camel_loc;
   if !touches_edge then Open
   else

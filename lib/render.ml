@@ -76,7 +76,8 @@ let draw_board_gui board =
               draw_tile_texture blank r c;
               draw_rectangle (c * tile_size) (r * tile_size) tile_size tile_size
                 (blank_tile_overlay win_state r c)
-          | Logs -> draw_tile_texture blank r c)
+          | Cherry | Bees | GoldenApple | Portal _ | LavaBucket ->
+              draw_tile_texture blank r c)
         row)
     board.grid;
   let rows = Array.length board.grid in
@@ -104,10 +105,6 @@ let render_board _board =
               ANSITerminal.print_string
                 [ ANSITerminal.white; ANSITerminal.on_black ]
                 "B"
-          | Logs ->
-              ANSITerminal.print_string
-                [ ANSITerminal.red; ANSITerminal.on_black ]
-                "L"
           (* print_string " " *)
           | Blank -> (
               match win_state with
@@ -128,6 +125,15 @@ let render_board _board =
                       ANSITerminal.print_string
                         [ ANSITerminal.white; ANSITerminal.on_green ]
                         "G"))
+          | Portal id ->
+              ANSITerminal.print_string
+                [ ANSITerminal.white; ANSITerminal.on_magenta ]
+                (string_of_int id)
+          | Cherry | Bees | GoldenApple | LavaBucket ->
+              let props = properties_of tile in
+              ANSITerminal.print_string
+                [ ANSITerminal.white; ANSITerminal.on_magenta ]
+                (String.make 1 props.file_char)
           (* print_string " " *)
         in
         Array.iteri tileprint row;
@@ -154,7 +160,10 @@ let str_render_board board =
     | Water -> "W "
     | Wall -> "B "
     | Blank -> "G "
-    | Logs -> "L "
+    | Portal id -> string_of_int id ^ " "
+    | (Cherry | Bees | GoldenApple | LavaBucket) as t ->
+        let props = properties_of t in
+        String.make 1 props.file_char ^ " "
   in
 
   Array.iter
