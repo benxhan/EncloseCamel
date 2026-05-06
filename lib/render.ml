@@ -6,32 +6,44 @@ let info_panel_height = 96
 let asset_dir = "gui/assets"
 
 type texture_assets = {
-  camel : Texture.t;
-  water : Texture.t;
-  wall : Texture.t;
-  blank : Texture.t;
+  camel : Texture.t array;
+  water : Texture.t array;
+  wall : Texture.t array;
+  blank : Texture.t array;
+  enclosed_blank : Texture.t array;
 }
 
 let textures : texture_assets option ref = ref None
 
 let texture_path file_name = Filename.concat asset_dir file_name
 
+let load_texture_frames base_name =
+  let rec collect index acc =
+    let file_name = Printf.sprintf "%s%d.png" base_name index in
+    let path = texture_path file_name in
+    if Sys.file_exists path then collect (index + 1) (load_texture path :: acc)
+    else acc
+  in
+  let frames = List.rev (collect 1 []) in
+  match frames with
+  | [] ->
+      let file_name = base_name ^ ".png" in
+      let path = texture_path file_name in
+      if Sys.file_exists path then [| load_texture path |]
+      else failwith ("Missing raylib asset sequence for: " ^ base_name)
+  | _ -> Array.of_list frames
+
 let load_gui_textures () =
   match !textures with
   | Some assets -> assets
   | None ->
-      let load name =
-        let path = texture_path name in
-        if not (Sys.file_exists path) then
-          failwith ("Missing raylib asset: " ^ path)
-        else load_texture path
-      in
       let assets =
         {
-          camel = load "camel.png";
-          water = load "water.png";
-          wall = load "wall.png";
-          blank = load "blank.png";
+          camel = load_texture_frames "camel";
+          water = load_texture_frames "water";
+          wall = load_texture_frames "wall";
+          blank = load_texture_frames "blank";
+          enclosed_blank = load_texture_frames "corn";
         }
       in
       textures := Some assets;
@@ -44,11 +56,18 @@ let unload_gui_textures () =
   match !textures with
   | None -> ()
   | Some assets ->
-      unload_texture assets.camel;
-      unload_texture assets.water;
-      unload_texture assets.wall;
-      unload_texture assets.blank;
+      Array.iter unload_texture assets.camel;
+      Array.iter unload_texture assets.water;
+      Array.iter unload_texture assets.wall;
+      Array.iter unload_texture assets.blank;
+      Array.iter unload_texture assets.enclosed_blank;
       textures := None
+
+let current_frame frames =
+  let seconds = get_time () in
+  let frame_count = Array.length frames in
+  if frame_count = 0 then failwith "No texture frames loaded"
+  else frames.(int_of_float (floor seconds) mod frame_count)
 
 let draw_tile_texture texture r c =
   let x = c * tile_size in
@@ -57,30 +76,30 @@ let draw_tile_texture texture r c =
   draw_texture_ex texture (Vector2.create (float x) (float y)) 0.0 scale Color.white;
   draw_rectangle_lines x y tile_size tile_size Color.black
 
-let blank_tile_overlay win_state row col =
-  match win_state with
-  | Open -> Color.create 140 212 124 140
-  | Enclosed { tiles; _ } ->
-      if tiles.(row).(col) then Color.create 255 238 88 150
-      else Color.create 140 212 124 120
-
 let draw_board_gui board =
-  let { camel; water; wall; blank } = load_gui_textures () in
+  let { camel; water; wall; blank; enclosed_blank } = load_gui_textures () in
   let win_state = reachable_from_camel board in
+  let camel_tex = current_frame camel in
+  let water_tex = current_frame water in
+  let wall_tex = current_frame wall in
+  let blank_tex = current_frame blank in
+  let enclosed_blank_tex = current_frame enclosed_blank in
   Array.iteri
     (fun r row ->
       Array.iteri
         (fun c tile ->
           match tile with
-          | Camel -> draw_tile_texture camel r c
-          | Water -> draw_tile_texture water r c
-          | Wall -> draw_tile_texture wall r c
+          | Camel -> draw_tile_texture camel_tex r c
+          | Water -> draw_tile_texture water_tex r c
+          | Wall -> draw_tile_texture wall_tex r c
           | Blank ->
-              draw_tile_texture blank r c;
-              draw_rectangle
-                (c * tile_size)
-                (r * tile_size)
-                tile_size tile_size (blank_tile_overlay win_state r c))
+              let texture =
+                match win_state with
+                | Open -> blank_tex
+                | Enclosed { tiles; _ } ->
+                    if tiles.(r).(c) then enclosed_blank_tex else blank_tex
+              in
+              draw_tile_texture texture r c)
         row)
     board.grid;
   let rows = Array.length board.grid in

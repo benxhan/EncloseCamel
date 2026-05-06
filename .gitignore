@@ -2,5 +2,4 @@ _build/
 _opam/
 _coverage/
 .vscode/settings.json
-.DS_store
-/.DS_store
+.DS_Store
