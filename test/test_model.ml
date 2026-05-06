@@ -12,13 +12,14 @@ let string_of_tile = function
   | Water -> "Water"
   | Wall -> "Wall"
   | Blank -> "Blank"
+  | Logs -> "Logs"
 
 (* Helper to create a standard test board Camel is at (2,2), Water is at (1,1),
    and we manually add a Wall at (3,3) *)
 let setup_board () =
   let b =
     init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 }
-      ~water:[ { r = 1; c = 1 } ]
+      ~water:[ { r = 1; c = 1 } ] ~logs:[]
       ~walls_available:10 ~max_score:0
   in
   set_tile b { r = 3; c = 3 } Wall;
@@ -111,7 +112,7 @@ let reachable_tests =
          ( "camel_fully_enclosed" >:: fun _ ->
            let b =
              init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 }
-               ~water:[ { r = 0; c = 0 } ]
+               ~water:[ { r = 0; c = 0 } ] ~logs:[]
                ~walls_available:10 ~max_score:0
            in
            (* Box the camel completely in walls *)
@@ -133,7 +134,7 @@ let reachable_tests =
          ( "camel_free_to_reach_everything" >:: fun _ ->
            let b =
              init ~width:3 ~height:3 ~camel:{ r = 1; c = 1 }
-               ~water:[ { r = 2; c = 2 } ]
+               ~water:[ { r = 2; c = 2 } ] ~logs:[]
                ~walls_available:10 ~max_score:0
            in
            let result = reachable_from_camel b in
@@ -165,7 +166,7 @@ let place_wall_tests =
            | _ -> assert_failure "Expected Error Occupied" );
          ( "place_no_walls_budget" >:: fun _ ->
            let b =
-             init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 } ~water:[]
+             init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 } ~water:[] ~logs:[]
                ~walls_available:0 ~max_score:0
            in
            match place_wall b { r = 0; c = 0 } with
@@ -200,8 +201,38 @@ let place_wall_tests =
            | _ -> assert_failure "Expected Ok" );
        ]
 
+       let setup_board_with_logs () =
+  init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 }
+    ~water:[ { r = 1; c = 1 } ]
+    ~logs:[ { r = 0; c = 1 }; { r = 4; c = 4 } ]
+    ~walls_available:10 ~max_score:0
+
+       let logs_tests =
+  "logs tests"
+  >::: [
+         ( "logs_are_initialized_on_grid" >:: fun _ ->
+           let b = setup_board_with_logs () in
+           assert_equal Logs
+             (get_tile b { r = 0; c = 1 })
+             ~printer:string_of_tile;
+           assert_equal Logs
+             (get_tile b { r = 4; c = 4 })
+             ~printer:string_of_tile );
+         
+         ( "logs_count_as_occupied" >:: fun _ ->
+           let b = setup_board_with_logs () in
+           assert_equal ~printer:string_of_place_result Occupied
+             (check_coord_placement b { r = 0; c = 1 }) );
+
+         ( "cannot_place_wall_on_logs" >:: fun _ ->
+           let b = setup_board_with_logs () in
+           match place_wall b { r = 0; c = 1 } with
+           | Error Occupied -> ()
+           | _ -> assert_failure "Expected Error Occupied on Logs tile" );
+       ]
+
 let all_tests =
   "all model tests"
-  >::: [ tests; neighbors4_tests; reachable_tests; place_wall_tests ]
+  >::: [ tests; neighbors4_tests; reachable_tests; place_wall_tests; logs_tests ]
 
 let _ = run_test_tt_main all_tests

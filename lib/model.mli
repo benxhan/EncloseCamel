@@ -16,15 +16,22 @@ type tile =
   | Water
   | Wall
   | Blank
+  | Logs
 
 (** The full state of the game board.
     - [grid] — a row-major 2-D array of tiles, indexed as [grid.(r).(c)].
-    - [walls_remaining] — the number of walls the player may still place. *)
+    - [walls_remaining] — the number of walls the player may still place. 
+    - [bonus_walls] — the number of bonus walls the player has earned from enclosing
+      logs, which can be used after the initial budget is exhausted. 
+    - [bonused_logs] — the list of log coordinates that have already been bonused, to
+      prevent double-counting bonus walls. *)
 type board = {
   grid : tile array array;
   walls_remaining : int;
+  bonus_walls : int ref;
   max_score : int;
   camel_loc : coordinate;
+  bonused_logs : coordinate list ref;
 }
 
 (** The outcome of a [place_wall] attempt.
@@ -51,18 +58,21 @@ type enclosed_state =
   | Enclosed of {
       tiles : bool array array;
       score : int;
+      bonus_walls : int;
     }
 
 (** The result of a reachability query originating from the camel's position.
     - [tiles] — every coordinate reachable from the camel via 4-directional
       movement through [Blank] cells, including the camel's own cell.
     - [score] — the number of enclosed [Camel] and [Blank] tiles (i.e., the
-      length of the [tiles] list, completely omitting [Water] tiles). *)
+      length of the [tiles] list, completely omitting [Water] tiles). 
+    - [logs] — the list of log coordinates on the board. *)
 val init :
   width:int ->
   height:int ->
   camel:coordinate ->
   water:coordinate list ->
+  logs :coordinate list ->
   walls_available:int ->
   max_score:int ->
   board

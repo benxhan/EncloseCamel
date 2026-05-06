@@ -99,6 +99,7 @@ let load_board (filename : string) : Model.board =
         | None -> camel_pos := Some { Model.r = row_idx; c = col_idx });
         Model.Camel
     | 'W' -> Model.Water
+    | 'L' -> Model.Logs
     | 'B' -> Model.Wall
     | 'G' -> Model.Blank
     | c ->
@@ -121,4 +122,11 @@ let load_board (filename : string) : Model.board =
     | Some coord -> coord
   in
   (* Assemble the board *)
-  { Model.grid; walls_remaining; max_score; camel_loc }
+  {
+    Model.grid;
+    walls_remaining;
+    bonus_walls = ref 0;
+    max_score;
+    camel_loc;
+    bonused_logs = ref [];
+  }

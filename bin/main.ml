@@ -29,7 +29,20 @@ let rec loop board =
             | Open ->
                 print_endline "Placed rock.";
                 loop next_board
-            | Enclosed { score; _ } ->
+            | Enclosed { score; bonus_walls; tiles; _ } ->
+                (* Apply bonus walls from this enclosure to the board *)
+                next_board.bonus_walls :=
+                  !(next_board.bonus_walls) + bonus_walls;
+                (* Mark logs in the enclosed area as bonused *)
+                Array.iteri
+                  (fun r row ->
+                    Array.iteri
+                      (fun c enclosed ->
+                        if enclosed && next_board.grid.(r).(c) = Logs then
+                          next_board.bonused_logs :=
+                            { r; c } :: !(next_board.bonused_logs))
+                      row)
+                  tiles;
                 if score = next_board.max_score then begin
                   print_endline
                     ("You won! Max score of " ^ string_of_int score
@@ -45,7 +58,7 @@ let rec loop board =
             print_place_result bad_move;
             loop board)
 
-let default_level_file = "data/basicworld.txt"
+let default_level_file = "data/logs.txt"
 
 (* [write_default_level_file ()] overwrites [default_level_file] with the
    original default board layout. Used when [data/basicworld.txt] is missing or
@@ -54,11 +67,11 @@ let write_default_level_file () =
   let original_file = open_out default_level_file in
   output_string original_file
     "2\n\
-     C G G G G G G G G G\n\
+     G G G G G G G G G G\n\
      G G G G G G G G W G\n\
      G G G G G G G W G G\n\
      G G G G G G W G G G\n\
-     G G G G G W G G G G\n\
+     G G G G C W G G G G\n\
      G G G G W G G G G G\n\
      G G G W G G G G G G\n\
      G G W G G G G G G G\n\

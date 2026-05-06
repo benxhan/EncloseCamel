@@ -23,6 +23,10 @@ let render_board _board =
               ANSITerminal.print_string
                 [ ANSITerminal.white; ANSITerminal.on_black ]
                 "B";
+          | Logs ->
+              ANSITerminal.print_string
+                [ ANSITerminal.red; ANSITerminal.on_black ]
+                "L";
               (* print_string " " *)
           | Blank -> match win_state with
             | Open -> 
@@ -49,7 +53,7 @@ let render_board _board =
   in
   let () = print_endline ("Coordinates of the Camel are ("^(string_of_int _board.camel_loc.r)^", "^(string_of_int _board.camel_loc.c)^")") in
   print_endline
-    ("Number of walls remaining: " ^ string_of_int _board.walls_remaining)
+    ("Number of walls remaining: " ^ string_of_int (_board.walls_remaining+ !(_board.bonus_walls)))
 
 let str_render_board board =
   let buf = Buffer.create 128 in
@@ -59,6 +63,7 @@ let str_render_board board =
     | Water -> "W "
     | Wall -> "B "
     | Blank -> "G "
+    | Logs -> "L "
   in
 
   Array.iter
