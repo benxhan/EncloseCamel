@@ -53,7 +53,8 @@ let unload_gui_textures () =
 let draw_tile_texture texture r c =
   let x = c * tile_size in
   let y = r * tile_size in
-  draw_texture texture x y Color.white;
+  let scale = float tile_size /. float (Texture.width texture) in
+  draw_texture_ex texture (Vector2.create (float x) (float y)) 0.0 scale Color.white;
   draw_rectangle_lines x y tile_size tile_size Color.black
 
 let blank_tile_overlay win_state row col =
