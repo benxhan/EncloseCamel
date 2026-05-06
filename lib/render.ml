@@ -11,6 +11,7 @@ type texture_assets = {
   wall : Texture.t array;
   blank : Texture.t array;
   enclosed_blank : Texture.t array;
+  corn_camel : Texture.t array;
 }
 
 let textures : texture_assets option ref = ref None
@@ -44,6 +45,7 @@ let load_gui_textures () =
           wall = load_texture_frames "wall";
           blank = load_texture_frames "blank";
           enclosed_blank = load_texture_frames "corn";
+          corn_camel = load_texture_frames "cornCamel";
         }
       in
       textures := Some assets;
@@ -61,6 +63,7 @@ let unload_gui_textures () =
       Array.iter unload_texture assets.wall;
       Array.iter unload_texture assets.blank;
       Array.iter unload_texture assets.enclosed_blank;
+      Array.iter unload_texture assets.corn_camel;
       textures := None
 
 let current_frame frames =
@@ -77,19 +80,26 @@ let draw_tile_texture texture r c =
   draw_rectangle_lines x y tile_size tile_size Color.black
 
 let draw_board_gui board =
-  let { camel; water; wall; blank; enclosed_blank } = load_gui_textures () in
+  let { camel; water; wall; blank; enclosed_blank; corn_camel } = load_gui_textures () in
   let win_state = reachable_from_camel board in
   let camel_tex = current_frame camel in
   let water_tex = current_frame water in
   let wall_tex = current_frame wall in
   let blank_tex = current_frame blank in
   let enclosed_blank_tex = current_frame enclosed_blank in
+  let corn_camel_tex = current_frame corn_camel in
   Array.iteri
     (fun r row ->
       Array.iteri
         (fun c tile ->
           match tile with
-          | Camel -> draw_tile_texture camel_tex r c
+          | Camel ->
+              let texture =
+                match win_state with
+                | Open -> camel_tex
+                | Enclosed _ -> corn_camel_tex
+              in
+              draw_tile_texture texture r c
           | Water -> draw_tile_texture water_tex r c
           | Wall -> draw_tile_texture wall_tex r c
           | Blank ->
