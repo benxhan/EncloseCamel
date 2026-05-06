@@ -322,7 +322,7 @@ let portal_tests =
            match result with
            | Enclosed { score; _ } ->
                (* Calculation:
-                  Camel at (2,2) = 0 pts -> init score is 1 (representing camel footprint)
+                  Camel at (2,2) = 1 pt -> explicit 1 point just like a Blank tile
                   Portal 0 at (2,3) = 1 pt
                   Portal 0 at (6,6) = 1 pt
                   Blank at (6,7) = 1 pt. Total = 4 pts *)

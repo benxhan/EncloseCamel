@@ -33,14 +33,14 @@ let rec loop board =
                 (* Apply bonus walls from this enclosure to the board *)
                 next_board.bonus_walls :=
                   !(next_board.bonus_walls) + bonus_walls;
-                (* Mark logs in the enclosed area as bonused *)
+                (* Mark LavaBuckets in the enclosed area as consumed *)
                 Array.iteri
                   (fun r row ->
                     Array.iteri
                       (fun c enclosed ->
-                        if enclosed && next_board.grid.(r).(c) = Logs then
-                          next_board.bonused_logs :=
-                            { r; c } :: !(next_board.bonused_logs))
+                        if enclosed && next_board.grid.(r).(c) = LavaBucket then
+                          next_board.consumed_lava_buckets :=
+                            { r; c } :: !(next_board.consumed_lava_buckets))
                       row)
                   tiles;
                 if score = next_board.max_score then begin

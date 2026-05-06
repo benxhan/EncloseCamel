@@ -27,7 +27,7 @@ let properties_of = function
   | GoldenApple -> { points = 10; walkable = true; file_char = 'A' }
   | Portal _ -> { points = 1; walkable = true; file_char = 'P' }
   | LavaBucket -> { points = 1; walkable = true; file_char = 'L' }
-  | Camel -> { points = 0; walkable = true; file_char = 'C' }
+  | Camel -> { points = 1; walkable = true; file_char = 'C' }
   | Water -> { points = 0; walkable = false; file_char = 'W' }
   | Wall -> { points = 0; walkable = false; file_char = 'B' }
 
@@ -184,7 +184,8 @@ let reachable_from_camel _board =
   (* Initialize visited array to track seen tiles *)
   let visited = Array.init height (fun _ -> Array.make width false) in
   visited.(_board.camel_loc.r).(_board.camel_loc.c) <- true;
-  let _score = ref 1 in
+  let start_tile = _grid.(_board.camel_loc.r).(_board.camel_loc.c) in
+  let _score = ref (properties_of start_tile).points in
 
   let enclosed_bonus_walls = ref 0 in
   let touches_edge = ref false in
