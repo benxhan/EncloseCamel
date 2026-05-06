@@ -13,7 +13,6 @@ type texture_assets = {
 }
 
 let textures : texture_assets option ref = ref None
-
 let texture_path file_name = Filename.concat asset_dir file_name
 
 let load_gui_textures () =
@@ -37,8 +36,7 @@ let load_gui_textures () =
       textures := Some assets;
       assets
 
-let init_gui_textures () =
-  ignore (load_gui_textures ())
+let init_gui_textures () = ignore (load_gui_textures ())
 
 let unload_gui_textures () =
   match !textures with
@@ -76,71 +74,77 @@ let draw_board_gui board =
           | Wall -> draw_tile_texture wall r c
           | Blank ->
               draw_tile_texture blank r c;
-              draw_rectangle
-                (c * tile_size)
-                (r * tile_size)
-                tile_size tile_size (blank_tile_overlay win_state r c))
+              draw_rectangle (c * tile_size) (r * tile_size) tile_size tile_size
+                (blank_tile_overlay win_state r c)
+          | Logs -> draw_tile_texture blank r c)
         row)
     board.grid;
   let rows = Array.length board.grid in
   let cols = Array.length board.grid.(0) in
-  draw_rectangle_lines 0 0 (cols * tile_size) (rows * tile_size)
-    Color.black
+  draw_rectangle_lines 0 0 (cols * tile_size) (rows * tile_size) Color.black
 
 let render_board _board =
-  let win_state = reachable_from_camel _board in 
+  let win_state = reachable_from_camel _board in
   let () =
     Array.iteri
       (fun r_ind row ->
-
-        let tileprint c_ind tile = 
-          
+        let tileprint c_ind tile =
           match tile with
           | Camel ->
               ANSITerminal.print_string
                 [ ANSITerminal.white; ANSITerminal.on_red ]
-                "C";
-              (* print_string " " *)
+                "C"
+          (* print_string " " *)
           | Water ->
               ANSITerminal.print_string
                 [ ANSITerminal.white; ANSITerminal.on_blue ]
-                "W";
-              (* print_string " " *)
+                "W"
+          (* print_string " " *)
           | Wall ->
               ANSITerminal.print_string
                 [ ANSITerminal.white; ANSITerminal.on_black ]
-                "B";
+                "B"
           | Logs ->
               ANSITerminal.print_string
                 [ ANSITerminal.red; ANSITerminal.on_black ]
-                "L";
+                "L"
+          (* print_string " " *)
+          | Blank -> (
+              match win_state with
+              | Open ->
+                  ANSITerminal.print_string
+                    [ ANSITerminal.white; ANSITerminal.on_green ]
+                    "G"
               (* print_string " " *)
-          | Blank -> match win_state with
-            | Open -> 
-              ANSITerminal.print_string
-                [ ANSITerminal.white; ANSITerminal.on_green ]
-                "G";
-              (* print_string " " *)
-            | Enclosed area -> 
-              let check_tile = area.tiles.(r_ind).(c_ind) in 
-              match check_tile with 
-              | true -> 
-              ANSITerminal.print_string
-                [ ANSITerminal.black; ANSITerminal.on_yellow ]
-                "G";
-                (* print_string " " *)
-              | false -> ANSITerminal.print_string
-                [ ANSITerminal.white; ANSITerminal.on_green ]
-                "G";
-                (* print_string " " *)
+              | Enclosed area -> (
+                  let check_tile = area.tiles.(r_ind).(c_ind) in
+                  match check_tile with
+                  | true ->
+                      ANSITerminal.print_string
+                        [ ANSITerminal.black; ANSITerminal.on_yellow ]
+                        "G"
+                  (* print_string " " *)
+                  | false ->
+                      ANSITerminal.print_string
+                        [ ANSITerminal.white; ANSITerminal.on_green ]
+                        "G"))
+          (* print_string " " *)
         in
         Array.iteri tileprint row;
         print_newline ())
-      _board.grid 
+      _board.grid
   in
-  let () = print_endline ("Coordinates of the Camel are ("^(string_of_int _board.camel_loc.r)^", "^(string_of_int _board.camel_loc.c)^")") in
+  let () =
+    print_endline
+      ("Coordinates of the Camel are ("
+      ^ string_of_int _board.camel_loc.r
+      ^ ", "
+      ^ string_of_int _board.camel_loc.c
+      ^ ")")
+  in
   print_endline
-    ("Number of walls remaining: " ^ string_of_int (_board.walls_remaining+ !(_board.bonus_walls)))
+    ("Number of walls remaining: "
+    ^ string_of_int (_board.walls_remaining + !(_board.bonus_walls)))
 
 let str_render_board board =
   let buf = Buffer.create 128 in

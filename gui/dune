@@ -1,4 +1,0 @@
-(executable
- (name frontend)
- (public_name enclosecamel-gui)
- (libraries EncloseCamel raylib))
