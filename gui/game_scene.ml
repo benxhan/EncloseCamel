@@ -6,9 +6,10 @@ open Common
 open Render
 
 let run_game_scene assets board =
+  let scale = 0.15 in
   let back_button_x = 10 in
   let back_button_y = board_pixel_height board + 10 in
-  let back_rect = button_rect back_button_x back_button_y assets.back in
+  let back_rect = button_rect back_button_x back_button_y assets.back scale in
   let rec loop board status_message =
     if window_should_close () then Quit
     else if is_key_pressed Key.Q then Quit
@@ -18,7 +19,7 @@ let run_game_scene assets board =
       clear_background Color.raywhite;
       draw_board_gui board;
       draw_status_panel board status_message;
-      draw_button back_button_x back_button_y assets.back "Back";
+      draw_button back_button_x back_button_y assets.back "Back" scale;
       end_drawing ();
       if button_clicked back_rect then NextScene Home
       else if is_mouse_button_pressed MouseButton.Left then
