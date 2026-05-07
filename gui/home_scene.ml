@@ -1,14 +1,16 @@
+open EncloseCamel
 open Raylib
 open Scene
 open Common
 
 let run_home_scene assets =
-  let x = 340 in
+  let window_width = get_screen_width () in
+  let x = (window_width - 260) / 2 in
   let start_y = 260 in
   let buttons =
-    [ (x, start_y, assets.play, "Play", fun () -> GameScene (load_default_board ()))
-    ; (x, start_y + 100, assets.load_level, "Load Level", fun () -> LevelSelect)
-    ; (x, start_y + 200, assets.credits, "Credits", fun () -> Credits)
+    [ (x, start_y, assets.play, "Play", fun () -> NextScene LevelSelect)
+    ; (x, start_y + 100, assets.load_level, "Load Level", fun () -> NextScene (FileInput ("", true, None)))
+    ; (x, start_y + 200, assets.credits, "Credits", fun () -> NextScene Credits)
     ]
   in
   let rec loop () =
@@ -23,7 +25,7 @@ let run_home_scene assets =
         buttons;
       end_drawing ();
       match find_menu_action buttons with
-      | Some action -> NextScene (action ())
+      | Some action -> action ()
       | None -> loop ())
   in
   loop ()

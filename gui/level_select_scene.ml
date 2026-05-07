@@ -3,7 +3,8 @@ open Scene
 open Common
 
 let run_level_select_scene assets =
-  let x = 320 in
+  let window_width = get_screen_width () in
+  let x = (window_width - 260) / 2 in
   let start_y = 260 in
   let buttons =
     [ (x, start_y, assets.play, "Start Default", fun () -> GameScene (load_default_board ()))

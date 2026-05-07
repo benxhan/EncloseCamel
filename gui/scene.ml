@@ -2,7 +2,7 @@ open EncloseCamel
 open Model
 open Raylib
 
-type scene = Home | LevelSelect | GameScene of board | Credits
+type scene = Home | LevelSelect | GameScene of board | Credits | FileInput of (string * bool * string option)
 
 type scene_outcome = Quit | NextScene of scene
 

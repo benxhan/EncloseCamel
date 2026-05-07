@@ -7,6 +7,7 @@ open Home_scene
 open Level_select_scene
 open Game_scene
 open Credits_scene
+open File_input_scene
 
 let run_scene assets scene =
   match scene with
@@ -14,6 +15,7 @@ let run_scene assets scene =
   | LevelSelect -> run_level_select_scene assets
   | GameScene board -> run_game_scene assets board
   | Credits -> run_credits_scene assets
+  | FileInput state -> run_file_input_scene assets state
 
 let () =
   let board = load_starting_board () in
