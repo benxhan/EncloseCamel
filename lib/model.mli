@@ -10,7 +10,12 @@ type coordinate = {
     - [Blank] — an empty, traversable cell.
     - [Water] — a water cell; the camel must be enclosed away from it.
     - [Wall] — a player-placed wall; blocks movement.
-    - [Camel] — the cell occupied by the camel. *)
+    - [Camel] — the cell occupied by the camel.
+    - [Cherry] — a tile worth 5 points.
+    - [Bees] — a tile that reduces the score by 5 points.
+    - [GoldenApple] — a tile worth 10 points.
+    - [Portal id] — a tile that connects to other portals with the same ID.
+    - [LavaBucket] — a tile that provides bonus walls when enclosed. *)
 type tile =
   | Camel
   | Water
@@ -21,13 +26,6 @@ type tile =
   | GoldenApple
   | Portal of int
   | LavaBucket
-
-(** The full state of the game board.
-    - [grid] — a row-major 2-D array of tiles, indexed as [grid.(r).(c)].
-    - [walls_remaining] — the number of walls the player may still place.
-    - [bonus_walls] — the number of bonus walls the player has earned from
-      enclosing lava_buckets, which can be used after the initial budget is
-      exhausted. *)
 
 type tile_properties = {
   points : int;
@@ -46,6 +44,16 @@ type tile_properties = {
       and automatically aggregate area score. *)
 val properties_of : tile -> tile_properties
 
+(** The full state of the game board.
+    - [grid] — a row-major 2-D array of tiles, indexed as [grid.(r).(c)].
+    - [walls_remaining] — the number of walls the player may still place.
+    - [bonus_walls] — the number of bonus walls the player has earned from
+      enclosing lava_buckets, which can be used after the initial budget is
+      exhausted.
+    - [max_score] — the maximum possible score achievable on this board.
+    - [camel_loc] — the coordinate of the [Camel] on the grid.
+    - [consumed_lava_buckets] — a list of coordinates of [LavaBucket] tiles that
+      have already been enclosed and their bonus walls claimed. *)
 type board = {
   grid : tile array array;
   walls_remaining : int;
