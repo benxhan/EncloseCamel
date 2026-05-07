@@ -12,6 +12,11 @@ let string_of_tile = function
   | Water -> "Water"
   | Wall -> "Wall"
   | Blank -> "Blank"
+  | Cherry -> "Cherry"
+  | Bees -> "Bees"
+  | GoldenApple -> "GoldenApple"
+  | Portal id -> "Portal " ^ string_of_int id
+  | LavaBucket -> "LavaBucket"
 
 (* Helper to create a standard test board Camel is at (2,2), Water is at (1,1),
    and we manually add a Wall at (3,3) *)
@@ -19,7 +24,7 @@ let setup_board () =
   let b =
     init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 }
       ~water:[ { r = 1; c = 1 } ]
-      ~walls_available:10 ~max_score:0
+      ~lava_buckets:[] ~walls_available:10 ~max_score:0
   in
   set_tile b { r = 3; c = 3 } Wall;
   b
@@ -108,11 +113,68 @@ let coords_of_bool_array arr =
 let reachable_tests =
   "reachable_from_camel tests"
   >::: [
+         ( "special_tiles_score_in_enclosure" >:: fun _ ->
+           let b =
+             init ~width:5 ~height:5 ~camel:{ r = 1; c = 1 } ~water:[]
+               ~lava_buckets:[] ~walls_available:20 ~max_score:0
+           in
+           let walls =
+             [
+               { r = 0; c = 1 };
+               { r = 0; c = 2 };
+               { r = 3; c = 1 };
+               { r = 3; c = 2 };
+               { r = 1; c = 0 };
+               { r = 2; c = 0 };
+               { r = 1; c = 3 };
+               { r = 2; c = 3 };
+             ]
+           in
+           List.iter (fun w -> set_tile b w Wall) walls;
+           set_tile b { r = 1; c = 2 } Cherry;
+           set_tile b { r = 2; c = 1 } Bees;
+           set_tile b { r = 2; c = 2 } GoldenApple;
+
+           let result = reachable_from_camel b in
+           match result with
+           | Enclosed { score; _ } ->
+               assert_equal ~printer:string_of_int 11 score
+                 ~msg:
+                   "Score should be 1(init) + 5(Cherry) - 5(Bees) + 10(Apple) \
+                    = 11"
+           | Open -> assert_failure "Expected Enclosed, but got Open" );
+         ( "lava_buckets_bonus_walls" >:: fun _ ->
+           let b =
+             init ~width:5 ~height:5 ~camel:{ r = 1; c = 1 } ~water:[]
+               ~lava_buckets:[] ~walls_available:20 ~max_score:0
+           in
+           let walls =
+             [
+               { r = 0; c = 1 };
+               { r = 0; c = 2 };
+               { r = 3; c = 1 };
+               { r = 3; c = 2 };
+               { r = 1; c = 0 };
+               { r = 2; c = 0 };
+               { r = 1; c = 3 };
+               { r = 2; c = 3 };
+             ]
+           in
+           List.iter (fun w -> set_tile b w Wall) walls;
+           set_tile b { r = 1; c = 2 } LavaBucket;
+           set_tile b { r = 2; c = 1 } LavaBucket;
+
+           let result = reachable_from_camel b in
+           match result with
+           | Enclosed { bonus_walls; _ } ->
+               assert_equal ~printer:string_of_int 6 bonus_walls
+                 ~msg:"Each LavaBucket gives 3 bonus walls"
+           | Open -> assert_failure "Expected Enclosed, but got Open" );
          ( "camel_fully_enclosed" >:: fun _ ->
            let b =
              init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 }
                ~water:[ { r = 0; c = 0 } ]
-               ~walls_available:10 ~max_score:0
+               ~lava_buckets:[] ~walls_available:10 ~max_score:0
            in
            (* Box the camel completely in walls *)
            set_tile b { r = 1; c = 2 } Wall;
@@ -121,7 +183,7 @@ let reachable_tests =
            set_tile b { r = 2; c = 3 } Wall;
            let result = reachable_from_camel b in
            match result with
-           | Enclosed { tiles; score } ->
+           | Enclosed { tiles; score; bonus_walls = _ } ->
                (* The camel can only reach its own tile *)
                assert_coords_equal
                  [ { r = 2; c = 2 } ]
@@ -134,7 +196,7 @@ let reachable_tests =
            let b =
              init ~width:3 ~height:3 ~camel:{ r = 1; c = 1 }
                ~water:[ { r = 2; c = 2 } ]
-               ~walls_available:10 ~max_score:0
+               ~lava_buckets:[] ~walls_available:10 ~max_score:0
            in
            let result = reachable_from_camel b in
            match result with
@@ -166,7 +228,7 @@ let place_wall_tests =
          ( "place_no_walls_budget" >:: fun _ ->
            let b =
              init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 } ~water:[]
-               ~walls_available:0 ~max_score:0
+               ~lava_buckets:[] ~walls_available:0 ~max_score:0
            in
            match place_wall b { r = 0; c = 0 } with
            | Error Occupied -> ()
@@ -200,8 +262,104 @@ let place_wall_tests =
            | _ -> assert_failure "Expected Ok" );
        ]
 
+let setup_board_with_lava_buckets () =
+  init ~width:5 ~height:5 ~camel:{ r = 2; c = 2 }
+    ~water:[ { r = 1; c = 1 } ]
+    ~lava_buckets:[ { r = 0; c = 1 }; { r = 4; c = 4 } ]
+    ~walls_available:10 ~max_score:0
+
+let lava_buckets_tests =
+  "logs tests"
+  >::: [
+         ( "lava_buckets_are_initialized_on_grid" >:: fun _ ->
+           let b = setup_board_with_lava_buckets () in
+           assert_equal LavaBucket
+             (get_tile b { r = 0; c = 1 })
+             ~printer:string_of_tile;
+           assert_equal LavaBucket
+             (get_tile b { r = 4; c = 4 })
+             ~printer:string_of_tile );
+         ( "lava_buckets_count_as_occupied" >:: fun _ ->
+           let b = setup_board_with_lava_buckets () in
+           assert_equal ~printer:string_of_place_result Occupied
+             (check_coord_placement b { r = 0; c = 1 }) );
+         ( "cannot_place_wall_on_lava_buckets" >:: fun _ ->
+           let b = setup_board_with_lava_buckets () in
+           match place_wall b { r = 0; c = 1 } with
+           | Error Occupied -> ()
+           | _ -> assert_failure "Expected Error Occupied on LavaBucket tile" );
+       ]
+
+let portal_tests =
+  "portal tests"
+  >::: [
+         ( "portals_connect_enclosed_areas" >:: fun _ ->
+           let b =
+             init ~width:10 ~height:10 ~camel:{ r = 2; c = 2 }
+               ~water:[] ~lava_buckets:[]
+               ~walls_available:20 ~max_score:0
+           in
+           (* Box A: encloses (2,2) and (2,3) *)
+           let box_a_walls = [
+             {r=1; c=1}; {r=1; c=2}; {r=1; c=3}; {r=1; c=4};
+             {r=2; c=1};                         {r=2; c=4};
+             {r=3; c=1}; {r=3; c=2}; {r=3; c=3}; {r=3; c=4};
+           ] in
+           List.iter (fun w -> set_tile b w Wall) box_a_walls;
+           set_tile b {r=2; c=3} (Portal 0);
+
+           (* Box B: encloses (6,6) and (6,7) *)
+           let box_b_walls = [
+             {r=5; c=5}; {r=5; c=6}; {r=5; c=7}; {r=5; c=8};
+             {r=6; c=5};                         {r=6; c=8};
+             {r=7; c=5}; {r=7; c=6}; {r=7; c=7}; {r=7; c=8};
+           ] in
+           List.iter (fun w -> set_tile b w Wall) box_b_walls;
+           set_tile b {r=6; c=6} (Portal 0);
+           (* (6,7) is implicitly a Blank tile worth 1 point *)
+
+           let result = reachable_from_camel b in
+           match result with
+           | Enclosed { score; _ } ->
+               (* Calculation:
+                  Camel at (2,2) = 1 pt -> explicit 1 point just like a Blank tile
+                  Portal 0 at (2,3) = 1 pt
+                  Portal 0 at (6,6) = 1 pt
+                  Blank at (6,7) = 1 pt. Total = 4 pts *)
+               assert_equal ~printer:string_of_int 4 score
+                 ~msg:"Score should combine Box A and Box B via portal jump"
+           | Open -> assert_failure "Expected Enclosed, but got Open" );
+
+
+         ( "portal_leaks_to_open_area" >:: fun _ ->
+           let b =
+             init ~width:10 ~height:10 ~camel:{ r = 2; c = 2 }
+               ~water:[] ~lava_buckets:[]
+               ~walls_available:20 ~max_score:0
+           in
+           (* Box A: safely encloses the camel... *)
+           let box_a_walls = [
+             {r=1; c=1}; {r=1; c=2}; {r=1; c=3}; {r=1; c=4};
+             {r=2; c=1};                         {r=2; c=4};
+             {r=3; c=1}; {r=3; c=2}; {r=3; c=3}; {r=3; c=4};
+           ] in
+           List.iter (fun w -> set_tile b w Wall) box_a_walls;
+           set_tile b {r=2; c=3} (Portal 0);
+
+           (* But Portal 0 at (8,8) is unrestricted and will reach the map edge *)
+           set_tile b {r=8; c=8} (Portal 0);
+
+           let result = reachable_from_camel b in
+           match result with
+           | Open -> () (* Since the second portal reaches the edge, the whole DFS touches_edge *)
+           | Enclosed _ -> assert_failure "Expected Open since second portal reaches the edge" );
+       ]
+
 let all_tests =
   "all model tests"
-  >::: [ tests; neighbors4_tests; reachable_tests; place_wall_tests ]
+  >::: [
+         tests; neighbors4_tests; reachable_tests; place_wall_tests; lava_buckets_tests; portal_tests;
+       ]
+
 
 let _ = run_test_tt_main all_tests

@@ -18,11 +18,11 @@ let parse_coordinate input =
           let c_coord = String.trim c in
           if r_coord = "" || c_coord = "" then Error Bad_format
           else
-            match int_of_string_opt r with
-            | None -> Error (Not_an_int r)
+            match int_of_string_opt r_coord with
+            | None -> Error (Not_an_int r_coord)
             | Some r -> (
-                match int_of_string_opt c with
-                | None -> Error (Not_an_int c)
+                match int_of_string_opt c_coord with
+                | None -> Error (Not_an_int c_coord)
                 | Some c -> Ok { Model.r; c }))
       | _ -> Error Bad_format
 
@@ -101,6 +101,11 @@ let load_board (filename : string) : Model.board =
     | 'W' -> Model.Water
     | 'B' -> Model.Wall
     | 'G' -> Model.Blank
+    | 'R' -> Model.Cherry
+    | 'E' -> Model.Bees
+    | 'A' -> Model.GoldenApple
+    | 'L' -> Model.LavaBucket
+    | '0' .. '9' as d -> Model.Portal (int_of_char d - int_of_char '0')
     | c ->
         failwith
           (Printf.sprintf "load_board: invalid character '%c' at row %d, col %d"
@@ -121,4 +126,11 @@ let load_board (filename : string) : Model.board =
     | Some coord -> coord
   in
   (* Assemble the board *)
-  { Model.grid; walls_remaining; max_score; camel_loc }
+  {
+    Model.grid;
+    walls_remaining;
+    bonus_walls = ref 0;
+    max_score;
+    camel_loc;
+    consumed_lava_buckets = ref [];
+  }

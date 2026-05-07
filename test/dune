@@ -1,7 +1,4 @@
 (test
  (name test_enclosecamel)
- (libraries ounit2 EncloseCamel))
-
-(test
- (name test_model)
+ (modules test_enclosecamel test_model test_parser test_render)
  (libraries ounit2 EncloseCamel))
