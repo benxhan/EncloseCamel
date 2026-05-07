@@ -12,6 +12,12 @@ type texture_assets = {
   blank : Texture.t array;
   enclosed_blank : Texture.t array;
   corn_camel : Texture.t array;
+  cherry : Texture.t array;
+  bees : Texture.t array;
+  golden_apple : Texture.t array;
+  lava_bucket : Texture.t array;
+  empty_bucket : Texture.t array;
+  portal : Texture.t array;
 }
 
 let textures : texture_assets option ref = ref None
@@ -45,6 +51,12 @@ let load_gui_textures () =
           blank = load_texture_frames "blank";
           enclosed_blank = load_texture_frames "corn";
           corn_camel = load_texture_frames "cornCamel";
+          cherry = load_texture_frames "cherry";
+          bees = load_texture_frames "bees";
+          golden_apple = load_texture_frames "golden_apple";
+          lava_bucket = load_texture_frames "lava_bucket";
+          empty_bucket = load_texture_frames "empty_bucket";
+          portal = load_texture_frames "portal";
         }
       in
       textures := Some assets;
@@ -62,6 +74,12 @@ let unload_gui_textures () =
       Array.iter unload_texture assets.blank;
       Array.iter unload_texture assets.enclosed_blank;
       Array.iter unload_texture assets.corn_camel;
+      Array.iter unload_texture assets.cherry;
+      Array.iter unload_texture assets.bees;
+      Array.iter unload_texture assets.golden_apple;
+      Array.iter unload_texture assets.lava_bucket;
+      Array.iter unload_texture assets.empty_bucket;
+      Array.iter unload_texture assets.portal;
       textures := None
 
 let current_frame frames =
@@ -70,15 +88,21 @@ let current_frame frames =
   if frame_count = 0 then failwith "No texture frames loaded"
   else frames.(int_of_float (floor seconds) mod frame_count)
 
-let draw_tile_texture texture r c =
+let portal_color id =
+  let r = (id * 50 + 100) mod 256 in
+  let g = (id * 100 + 50) mod 256 in
+  let b = (id * 150 + 200) mod 256 in
+  Color.create r g b 255
+
+let draw_tile_texture ?(color = Color.white) texture r c =
   let x = c * tile_size in
   let y = r * tile_size in
   let scale = float tile_size /. float (Texture.width texture) in
-  draw_texture_ex texture (Vector2.create (float x) (float y)) 0.0 scale Color.white;
+  draw_texture_ex texture (Vector2.create (float x) (float y)) 0.0 scale color;
   draw_rectangle_lines x y tile_size tile_size (Color.create 255 255 255 20)
 
 let draw_board_gui board =
-  let { camel; water; wall; blank; enclosed_blank; corn_camel } = load_gui_textures () in
+  let { camel; water; wall; blank; enclosed_blank; corn_camel; cherry; bees; golden_apple; lava_bucket; empty_bucket; portal } = load_gui_textures () in
   let win_state = reachable_from_camel board in
   let camel_tex = current_frame camel in
   let water_tex = current_frame water in
@@ -86,6 +110,12 @@ let draw_board_gui board =
   let blank_tex = current_frame blank in
   let enclosed_blank_tex = current_frame enclosed_blank in
   let corn_camel_tex = current_frame corn_camel in
+  let cherry_tex = current_frame cherry in
+  let bees_tex = current_frame bees in
+  let golden_apple_tex = current_frame golden_apple in
+  let lava_bucket_tex = current_frame lava_bucket in
+  let empty_bucket_tex = current_frame empty_bucket in
+  let portal_tex = current_frame portal in
   Array.iteri
     (fun r row ->
       Array.iteri
@@ -108,8 +138,18 @@ let draw_board_gui board =
                     if tiles.(r).(c) then enclosed_blank_tex else blank_tex
               in
               draw_tile_texture texture r c
-          | Cherry | Bees | GoldenApple | Portal _ | LavaBucket ->
-              draw_tile_texture blank_tex r c)
+          | Cherry -> draw_tile_texture cherry_tex r c
+          | Bees -> draw_tile_texture bees_tex r c
+          | GoldenApple -> draw_tile_texture golden_apple_tex r c
+          | LavaBucket ->
+              let texture =
+                match win_state with
+                | Open -> lava_bucket_tex
+                | Enclosed { tiles; _ } ->
+                    if tiles.(r).(c) then empty_bucket_tex else lava_bucket_tex
+              in
+              draw_tile_texture texture r c
+          | Portal id -> draw_tile_texture ~color:(portal_color id) portal_tex r c)
         row)
     board.grid;
   let rows = Array.length board.grid in

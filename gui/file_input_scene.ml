@@ -5,6 +5,7 @@ open Raylib
 open Scene
 
 let run_file_input_scene assets state =
+  let scale = 0.15 in
   let window_width = get_screen_width () in
   let window_height = get_screen_height () in
   let title_y = window_height / 4 in
@@ -13,11 +14,12 @@ let run_file_input_scene assets state =
   let prompt_y = title_y + 80 in
   let input_box_x = (window_width - input_box_width) / 2 in
   let input_box_y = prompt_y + 40 in
-  let button_x = (window_width - Texture.width assets.load_level) / 2 in
+  let button_width = int_of_float (float 1480 *. scale) in
+  let button_x = (window_width - button_width) / 2 in
   let load_button_y = input_box_y + 60 in
   let back_button_y = load_button_y + 120 in
-  let load_rect = button_rect button_x load_button_y assets.load_level in
-  let back_rect = button_rect button_x back_button_y assets.back in
+  let load_rect = button_rect button_x load_button_y assets.load_level scale in
+  let back_rect = button_rect button_x back_button_y assets.back scale in
 
   let loop (input_text, cursor_visible, error_message) =
     if window_should_close () then Quit
@@ -83,8 +85,8 @@ let run_file_input_scene assets state =
         let cursor_x = input_box_x + 10 + measure_text visible_text 20 in
         draw_line cursor_x (input_box_y + 5) cursor_x (input_box_y + input_box_height - 5) Color.black
       end;
-      draw_button button_x load_button_y assets.load_level "Load";
-      draw_button button_x back_button_y assets.back "Back";
+      draw_button button_x load_button_y assets.load_level "Load" scale;
+      draw_button button_x back_button_y assets.back "Back" scale;
       end_drawing ();
       if should_load || button_clicked load_rect then
         (try
