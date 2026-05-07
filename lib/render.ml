@@ -101,11 +101,15 @@ let draw_board_gui board =
           | Water -> draw_tile_texture water_tex r c
           | Wall -> draw_tile_texture wall_tex r c
           | Blank ->
-              draw_tile_texture blank r c;
-              draw_rectangle (c * tile_size) (r * tile_size) tile_size tile_size
-                (blank_tile_overlay win_state r c)
+              let texture =
+                match win_state with
+                | Open -> blank_tex
+                | Enclosed { tiles; _ } ->
+                    if tiles.(r).(c) then enclosed_blank_tex else blank_tex
+              in
+              draw_tile_texture texture r c
           | Cherry | Bees | GoldenApple | Portal _ | LavaBucket ->
-              draw_tile_texture blank r c)
+              draw_tile_texture blank_tex r c)
         row)
     board.grid;
   let rows = Array.length board.grid in
