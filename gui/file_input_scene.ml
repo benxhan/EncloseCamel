@@ -74,15 +74,13 @@ let run_file_input_scene assets state =
         Color.white;
       draw_rectangle 0 0 window_width window_height (Color.create 0 0 0 153);
       let title_text = "Load Level" in
-      let title_width = measure_text title_text 60 in
-      draw_text title_text ((window_width - title_width) / 2) title_y 60 Color.white;
+      draw_text_hcenter title_text title_y 60 Color.white;
       let prompt_text, prompt_color =
         match new_error_message with
         | Some msg -> (msg, Color.red)
         | None -> ("Enter the path to the level file:", Color.white)
       in
-      let prompt_x = (window_width - measure_text prompt_text 20) / 2 in
-      draw_text prompt_text prompt_x prompt_y 20 prompt_color;
+      draw_text_hcenter prompt_text prompt_y 20 prompt_color;
       draw_rectangle input_box_x input_box_y input_box_width input_box_height Color.white;
       draw_rectangle_lines input_box_x input_box_y input_box_width input_box_height Color.black;
       draw_text visible_text (input_box_x + 10) (input_box_y + 10) 20 Color.white;

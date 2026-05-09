@@ -38,7 +38,6 @@ let run_credits_scene assets =
     credits_text |> String.split_on_char '\n' |> List.map wrap_line
     |> List.flatten
   in
-  let text_x = margin in
   let initial_text_y = float_of_int (window_height + margin) in
   let scroll_speed = 40.0 in
   let fade_duration = 0.75 in
@@ -46,7 +45,7 @@ let run_credits_scene assets =
     match lines with
     | [] -> ()
     | line :: rest ->
-        draw_text line text_x y font_size Color.white;
+        draw_text_hcenter line y font_size Color.white;
         draw_lines rest (y + line_height)
   in
   let rec loop y_offset fade_alpha =
