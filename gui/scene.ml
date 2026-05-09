@@ -85,8 +85,8 @@ let draw_scene_title title =
   let subtitle = "Use the buttons below to navigate between scenes." in
   let title_x = (w - measure_text title title_font) / 2 in
   let subtitle_x = (w - measure_text subtitle subtitle_font) / 2 in
-  draw_text title title_x 100 title_font Color.black;
-  draw_text subtitle subtitle_x 180 subtitle_font Color.black
+  draw_text title title_x 100 title_font Color.white;
+  draw_text subtitle subtitle_x 180 subtitle_font Color.white
 
 let find_menu_action buttons scale =
   match
