@@ -16,7 +16,7 @@ val init_gui_textures : unit -> unit
 
 val unload_gui_textures : unit -> unit
 
-val draw_board_gui : Model.board -> unit
+val draw_board_gui : ?offset_x:int -> ?offset_y:int -> Model.board -> unit
 
 val str_render_board : Model.board -> string
 
