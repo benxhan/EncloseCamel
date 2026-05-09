@@ -67,23 +67,28 @@ let run_file_input_scene assets state =
       in
       let new_cursor_visible = (get_time () *. 2.0 |> int_of_float) mod 2 = 0 in
       begin_drawing ();
-      clear_background Color.raywhite;
+      let bg_scale_x = float window_width /. float (Texture.width assets.background) in
+      let bg_scale_y = float window_height /. float (Texture.height assets.background) in
+      draw_texture_ex assets.background (Vector2.create 0.0 0.0) 0.0
+        (max bg_scale_x bg_scale_y)
+        Color.white;
+      draw_rectangle 0 0 window_width window_height (Color.create 0 0 0 153);
       let title_text = "Load Level" in
       let title_width = measure_text title_text 60 in
-      draw_text title_text ((window_width - title_width) / 2) title_y 60 Color.black;
+      draw_text title_text ((window_width - title_width) / 2) title_y 60 Color.white;
       let prompt_text, prompt_color =
         match new_error_message with
         | Some msg -> (msg, Color.red)
-        | None -> ("Enter the path to the level file:", Color.black)
+        | None -> ("Enter the path to the level file:", Color.white)
       in
       let prompt_x = (window_width - measure_text prompt_text 20) / 2 in
       draw_text prompt_text prompt_x prompt_y 20 prompt_color;
       draw_rectangle input_box_x input_box_y input_box_width input_box_height Color.white;
       draw_rectangle_lines input_box_x input_box_y input_box_width input_box_height Color.black;
-      draw_text visible_text (input_box_x + 10) (input_box_y + 10) 20 Color.black;
+      draw_text visible_text (input_box_x + 10) (input_box_y + 10) 20 Color.white;
       if new_cursor_visible then begin
         let cursor_x = input_box_x + 10 + measure_text visible_text 20 in
-        draw_line cursor_x (input_box_y + 5) cursor_x (input_box_y + input_box_height - 5) Color.black
+        draw_line cursor_x (input_box_y + 5) cursor_x (input_box_y + input_box_height - 5) Color.white
       end;
       draw_button button_x load_button_y assets.load_level "Load" scale;
       draw_button button_x back_button_y assets.back "Back" scale;

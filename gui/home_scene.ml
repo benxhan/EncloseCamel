@@ -23,7 +23,10 @@ let run_home_scene assets =
       begin_drawing ();
       let bg_scale_x = float window_width /. float (Texture.width assets.background) in
       let bg_scale_y = float window_height /. float (Texture.height assets.background) in
-      draw_texture_ex assets.background (Vector2.create 0.0 0.0) 0.0 (max bg_scale_x bg_scale_y) Color.white;
+      draw_texture_ex assets.background (Vector2.create 0.0 0.0) 0.0
+        (max bg_scale_x bg_scale_y)
+        Color.white;
+      draw_rectangle 0 0 window_width window_height (Color.create 0 0 0 153);
       draw_scene_title "Enclose Camel";
       List.iter
         (fun (x, y, texture, label, _) -> draw_button x y texture label scale)
