@@ -79,10 +79,14 @@ let draw_button x y texture label scale =
     20 Color.black
 
 let draw_scene_title title =
-  draw_text title 280 100 60 Color.black;
-  draw_text
-    "Use the buttons below to navigate between scenes."
-    200 180 24 Color.black
+  let w = get_screen_width () in
+  let title_font = 60 in
+  let subtitle_font = 24 in
+  let subtitle = "Use the buttons below to navigate between scenes." in
+  let title_x = (w - measure_text title title_font) / 2 in
+  let subtitle_x = (w - measure_text subtitle subtitle_font) / 2 in
+  draw_text title title_x 100 title_font Color.black;
+  draw_text subtitle subtitle_x 180 subtitle_font Color.black
 
 let find_menu_action buttons scale =
   match
