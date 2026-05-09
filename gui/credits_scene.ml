@@ -46,7 +46,7 @@ let run_credits_scene assets =
     match lines with
     | [] -> ()
     | line :: rest ->
-        draw_text line text_x y font_size Color.black;
+        draw_text line text_x y font_size Color.white;
         draw_lines rest (y + line_height)
   in
   let rec loop y_offset fade_alpha =
@@ -72,6 +72,7 @@ let run_credits_scene assets =
       draw_texture_ex assets.background (Vector2.create 0.0 0.0) 0.0
         (max bg_scale_x bg_scale_y)
         Color.white;
+      draw_rectangle 0 0 window_width window_height (Color.create 0 0 0 153);
       draw_scene_title "Credits";
       draw_lines wrapped_lines text_y;
       draw_button button_x button_y assets.back "Home" scale;
