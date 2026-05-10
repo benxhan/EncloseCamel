@@ -84,8 +84,8 @@ let run_game_scene assets board level_index =
         (Color.create 110 155 80 255);
       draw_rectangle_lines back_button_x back_button_y button_width
         button_height Color.black;
-      let text_width = measure_text "Back" 20 in
-      draw_text "Back"
+      let text_width = measure_text "Home" 20 in
+      draw_text "Home"
         (back_button_x + ((button_width - text_width) / 2))
         (back_button_y + ((button_height - 20) / 2))
         20 Color.white;
