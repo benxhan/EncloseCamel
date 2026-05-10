@@ -29,20 +29,7 @@ let rec loop board =
             | Open ->
                 print_endline "Placed rock.";
                 loop next_board
-            | Enclosed { score; bonus_walls; tiles; _ } ->
-                (* Apply bonus walls from this enclosure to the board *)
-                next_board.bonus_walls :=
-                  !(next_board.bonus_walls) + bonus_walls;
-                (* Mark LavaBuckets in the enclosed area as consumed *)
-                Array.iteri
-                  (fun r row ->
-                    Array.iteri
-                      (fun c enclosed ->
-                        if enclosed && next_board.grid.(r).(c) = LavaBucket then
-                          next_board.consumed_lava_buckets :=
-                            { r; c } :: !(next_board.consumed_lava_buckets))
-                      row)
-                  tiles;
+            | Enclosed { score; tiles; _ } ->
                 if score = next_board.max_score then begin
                   print_endline
                     ("You won! Max score of " ^ string_of_int score

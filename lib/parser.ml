@@ -126,11 +126,4 @@ let load_board (filename : string) : Model.board =
     | Some coord -> coord
   in
   (* Assemble the board *)
-  {
-    Model.grid;
-    walls_remaining;
-    bonus_walls = ref 0;
-    max_score;
-    camel_loc;
-    consumed_lava_buckets = ref [];
-  }
+  { Model.grid; walls_remaining; max_score; camel_loc }

@@ -11,14 +11,7 @@ let test_str_render_board _ =
     |]
   in
   let board =
-    {
-      grid;
-      walls_remaining = 10;
-      bonus_walls = ref 0;
-      max_score = 50;
-      camel_loc = { r = 0; c = 0 };
-      consumed_lava_buckets = ref [];
-    }
+    { grid; walls_remaining = 10; max_score = 50; camel_loc = { r = 0; c = 0 } }
   in
   let s = Render.str_render_board board in
   (* We expect Camel to be 'C', Blank to be 'G', Cherry to be 'R', etc. *)

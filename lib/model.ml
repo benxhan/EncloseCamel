@@ -34,10 +34,8 @@ let properties_of = function
 type board = {
   grid : tile array array;
   walls_remaining : int;
-  bonus_walls : int ref;
   max_score : int;
   camel_loc : coordinate;
-  consumed_lava_buckets : coordinate list ref;
 }
 
 type place_result =
@@ -94,14 +92,7 @@ let init ~width ~height ~camel ~water ~lava_buckets ~walls_available ~max_score
   List.iter (fun { r; c } -> grid.(r).(c) <- LavaBucket) lava_buckets;
   grid.(camel.r).(camel.c) <- Camel;
 
-  {
-    grid;
-    walls_remaining = walls_available;
-    bonus_walls = ref 0;
-    max_score;
-    camel_loc = camel;
-    consumed_lava_buckets = ref [];
-  }
+  { grid; walls_remaining = walls_available; max_score; camel_loc = camel }
 
 (* [in_bounds board coord] returns [true] if [coord] is on the board.
 
@@ -135,31 +126,6 @@ let check_coord_placement _board _coord =
   else
     let coord_tile = get_tile _board _coord in
     if coord_tile = Blank then Ok else Occupied
-
-let place_wall board coord =
-  match check_coord_placement board coord with
-  | Out_of_bounds -> Error Out_of_bounds
-  | Occupied ->
-      (* if it's already a wall, remove it and refund the budget *)
-      if get_tile board coord = Wall then (
-        let new_board =
-          { board with walls_remaining = board.walls_remaining + 1 }
-        in
-        set_tile new_board coord Blank;
-        Ok new_board)
-      else Error Occupied
-  | Ok ->
-      (* if it's blank but we have no walls left, treat as occupied based on
-         tests *)
-      if board.walls_remaining + !(board.bonus_walls) <= 0 then Error Occupied
-      else
-        let new_board =
-          if board.walls_remaining > 0 then
-            { board with walls_remaining = board.walls_remaining - 1 }
-          else { board with bonus_walls = ref (!(board.bonus_walls) - 1) }
-        in
-        set_tile new_board coord Wall;
-        Ok new_board
 
 let neighbors4 _board _coord =
   let grid = _board.grid in
@@ -207,9 +173,7 @@ let reachable_from_camel _board =
                 (* specific hooks per tile type *)
                 (match tile with
                 | LavaBucket ->
-                    (* Only count bonus if this tile hasn't been bonused yet *)
-                    if not (List.mem crd !(_board.consumed_lava_buckets)) then
-                      enclosed_bonus_walls := !enclosed_bonus_walls + 3
+                    enclosed_bonus_walls := !enclosed_bonus_walls + 3
                 | Portal id ->
                     for r_idx = 0 to height - 1 do
                       for c_idx = 0 to width - 1 do
@@ -237,3 +201,39 @@ let reachable_from_camel _board =
   else
     Enclosed
       { tiles = visited; score = !_score; bonus_walls = !enclosed_bonus_walls }
+
+let current_bonus_walls board =
+  match reachable_from_camel board with
+  | Open -> 0
+  | Enclosed state -> state.bonus_walls
+
+let place_wall board coord =
+  match check_coord_placement board coord with
+  | Out_of_bounds -> Error Out_of_bounds
+  | Occupied ->
+      (* if it's already a wall, remove it and adjust budget *)
+      if get_tile board coord = Wall then (
+        let old_bonus = current_bonus_walls board in
+        set_tile board coord Blank;
+        let new_bonus = current_bonus_walls board in
+        let new_board =
+          {
+            board with
+            walls_remaining = board.walls_remaining + 1 - old_bonus + new_bonus;
+          }
+        in
+        Ok new_board)
+      else Error Occupied
+  | Ok ->
+      if board.walls_remaining <= 0 then Error Occupied
+      else
+        let old_bonus = current_bonus_walls board in
+        set_tile board coord Wall;
+        let new_bonus = current_bonus_walls board in
+        let new_board =
+          {
+            board with
+            walls_remaining = board.walls_remaining - 1 - old_bonus + new_bonus;
+          }
+        in
+        Ok new_board
