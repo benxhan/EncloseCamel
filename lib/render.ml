@@ -1,7 +1,16 @@
 open Model
 open Raylib
 
-let tile_size = 64
+let base_gui_tile_px = 64
+let tile_size = base_gui_tile_px
+
+let gui_tile_px_ref = ref base_gui_tile_px
+
+let gui_tile_px () = !gui_tile_px_ref
+
+let set_gui_tile_px n =
+  gui_tile_px_ref := max 1 (min base_gui_tile_px n)
+
 let info_panel_height = 96
 let asset_dir = "gui/assets"
 
@@ -95,11 +104,12 @@ let portal_color id =
   Color.create r g b 255
 
 let draw_tile_texture ?(color = Color.white) ?(offset_x = 0) ?(offset_y = 0) texture r c =
-  let x = c * tile_size + offset_x in
-  let y = r * tile_size + offset_y in
-  let scale = float tile_size /. float (Texture.width texture) in
+  let ts = gui_tile_px () in
+  let x = c * ts + offset_x in
+  let y = r * ts + offset_y in
+  let scale = float ts /. float (Texture.width texture) in
   draw_texture_ex texture (Vector2.create (float x) (float y)) 0.0 scale color;
-  draw_rectangle_lines x y tile_size tile_size (Color.create 255 255 255 20)
+  draw_rectangle_lines x y ts ts (Color.create 255 255 255 20)
 
 let draw_board_gui ?(offset_x = 0) ?(offset_y = 0) board =
   let { camel; water; wall; blank; enclosed_blank; corn_camel; cherry; bees; golden_apple; lava_bucket; empty_bucket; portal } = load_gui_textures () in
@@ -154,7 +164,8 @@ let draw_board_gui ?(offset_x = 0) ?(offset_y = 0) board =
     board.grid;
   let rows = Array.length board.grid in
   let cols = Array.length board.grid.(0) in
-  draw_rectangle_lines offset_x offset_y (cols * tile_size) (rows * tile_size) Color.black
+  let ts = gui_tile_px () in
+  draw_rectangle_lines offset_x offset_y (cols * ts) (rows * ts) Color.black
 
 let render_board _board =
   let win_state = reachable_from_camel _board in

@@ -1,14 +1,13 @@
 open Raylib
 open Scene
+open Common
 
 let run_credits_scene assets =
   let scale = 0.15 in
-  let window_width = get_screen_width () in
-  let window_height = get_screen_height () in
+  let window_width_start = get_screen_width () in
+  let window_height_start = get_screen_height () in
   let margin = 96 in
   let button_width = int_of_float (float 1480 *. scale) in
-  let button_x = (window_width - button_width) / 2 in
-  let button_y = window_height - 100 in
   let credits_text =
     "Thanks for playing Enclose Camel by Maxwell Li, Daniel Lee, Ben Han, \
      Caleb Helsel, and Jiayi Bai!\n\n\
@@ -20,7 +19,7 @@ let run_credits_scene assets =
   in
   let font_size = 24 in
   let line_height = 34 in
-  let max_text_width = window_width - (2 * margin) in
+  let max_text_width = window_width_start - (2 * margin) in
   let wrap_line line =
     let words = String.split_on_char ' ' line in
     let rec aux current acc = function
@@ -38,7 +37,7 @@ let run_credits_scene assets =
     credits_text |> String.split_on_char '\n' |> List.map wrap_line
     |> List.flatten
   in
-  let initial_text_y = float_of_int (window_height + margin) in
+  let initial_text_y = float_of_int (window_height_start + margin) in
   let scroll_speed = 40.0 in
   let fade_duration = 0.75 in
   let rec draw_lines lines y =
@@ -52,7 +51,10 @@ let run_credits_scene assets =
     if window_should_close () then Quit
     else if is_key_pressed Key.Q || is_key_pressed Key.Escape then
       NextScene Home
-    else
+    else (
+      toggle_fullscreen_hotkey ();
+      let window_width = get_screen_width () in
+      let window_height = get_screen_height () in
       let frame_time = get_frame_time () in
       let fade_started = y_offset <= 0.0 in
       let fade_alpha =
@@ -61,6 +63,8 @@ let run_credits_scene assets =
         else fade_alpha
       in
       let text_y = int_of_float y_offset in
+      let button_x = (window_width - button_width) / 2 in
+      let button_y = window_height - 100 in
       let bg_scale_x =
         float window_width /. float (Texture.width assets.background)
       in
@@ -82,6 +86,6 @@ let run_credits_scene assets =
       if button_clicked (button_rect button_x button_y assets.back scale) then
         NextScene Home
       else if fade_started && fade_alpha >= 255.0 then NextScene Home
-      else loop (y_offset -. (scroll_speed *. frame_time)) fade_alpha
+      else loop (y_offset -. (scroll_speed *. frame_time)) fade_alpha )
   in
   loop initial_text_y 0.0

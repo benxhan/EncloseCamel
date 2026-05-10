@@ -7,25 +7,38 @@ open Render
 
 let run_game_scene assets board =
   let scale = 0.15 in
-  let window_width = get_screen_width () in
-  let board_width = board_pixel_width board in
-  let board_offset_x = (window_width - board_width) / 2 in
-  let back_button_x = board_offset_x + 10 in
-  let back_button_y =
-    board_pixel_height board + Render.info_panel_height + 10
+  let layout board =
+    Render.set_gui_tile_px (compute_gui_tile_px board);
+    let window_width = get_screen_width () in
+    let board_width = board_pixel_width board in
+    let board_offset_x = (window_width - board_width) / 2 in
+    let back_button_x = board_offset_x + 10 in
+    let back_button_y =
+      board_pixel_height board + Render.info_panel_height + 10
+    in
+    let button_width =
+      int_of_float (float (Texture.width assets.back) *. scale)
+    in
+    let button_height =
+      int_of_float (float (Texture.height assets.back) *. scale)
+    in
+    let back_rect = button_rect back_button_x back_button_y assets.back scale in
+    ( board_offset_x,
+      back_button_x,
+      back_button_y,
+      button_width,
+      button_height,
+      back_rect )
   in
-  let button_width =
-    int_of_float (float (Texture.width assets.back) *. scale)
-  in
-  let button_height =
-    int_of_float (float (Texture.height assets.back) *. scale)
-  in
-  let back_rect = button_rect back_button_x back_button_y assets.back scale in
   let rec loop board status_message =
     if window_should_close () then Quit
     else if is_key_pressed Key.Q then Quit
     else if is_key_pressed Key.Escape then NextScene Home
     else (
+      toggle_fullscreen_hotkey ();
+      let board_offset_x, back_button_x, back_button_y, button_width, button_height, back_rect =
+        layout board
+      in
       begin_drawing ();
       clear_background (Color.create 110 155 80 255);
       draw_board_gui ~offset_x:board_offset_x board;

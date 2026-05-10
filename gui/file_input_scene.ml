@@ -3,28 +3,32 @@ open Model
 open Parser
 open Raylib
 open Scene
+open Common
 
 let run_file_input_scene assets state =
   let scale = 0.15 in
-  let window_width = get_screen_width () in
-  let window_height = get_screen_height () in
-  let title_y = window_height / 4 in
   let input_box_width = 400 in
   let input_box_height = 40 in
-  let prompt_y = title_y + 80 in
-  let input_box_x = (window_width - input_box_width) / 2 in
-  let input_box_y = prompt_y + 40 in
-  let button_width = int_of_float (float 1480 *. scale) in
-  let button_x = (window_width - button_width) / 2 in
-  let load_button_y = input_box_y + 60 in
-  let back_button_y = load_button_y + 120 in
-  let load_rect = button_rect button_x load_button_y assets.load_level scale in
-  let back_rect = button_rect button_x back_button_y assets.back scale in
 
   let loop (input_text, cursor_visible, error_message) =
     if window_should_close () then Quit
     else if is_key_pressed Key.Q || is_key_pressed Key.Escape then NextScene Home
     else (
+      toggle_fullscreen_hotkey ();
+      let window_width = get_screen_width () in
+      let window_height = get_screen_height () in
+      let title_y = window_height / 4 in
+      let prompt_y = title_y + 80 in
+      let input_box_x = (window_width - input_box_width) / 2 in
+      let input_box_y = prompt_y + 40 in
+      let button_width = int_of_float (float 1480 *. scale) in
+      let button_x = (window_width - button_width) / 2 in
+      let load_button_y = input_box_y + 60 in
+      let back_button_y = load_button_y + 120 in
+      let load_rect =
+        button_rect button_x load_button_y assets.load_level scale
+      in
+      let back_rect = button_rect button_x back_button_y assets.back scale in
       let max_text_width = input_box_width - 20 in
       let new_input_text, should_load, new_error_message =
         let ctrl_or_cmd_down () =

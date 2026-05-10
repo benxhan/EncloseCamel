@@ -63,16 +63,33 @@ let load_starting_board () =
         "To input a board, use: dune exec gui/frontend.exe -- <level-file>";
       load_default_board ()
 
-let board_pixel_width board = Array.length board.grid.(0) * Render.tile_size
+let board_pixel_width board =
+  Array.length board.grid.(0) * Render.gui_tile_px ()
 
-let board_pixel_height board = Array.length board.grid * Render.tile_size
+let board_pixel_height board = Array.length board.grid * Render.gui_tile_px ()
 
-let window_height board = board_pixel_height board + Render.info_panel_height
+
+
+let compute_gui_tile_px board =
+  let sw = get_screen_width () in
+  let sh = get_screen_height () in
+  let rows = Array.length board.grid in
+  let cols = Array.length board.grid.(0) in
+  let h_pad = 32 in
+  let v_pad = 16 in
+  let reserve_bottom = Render.info_panel_height + 80 in
+  let max_by_w = max 1 ((sw - (2 * h_pad)) / cols) in
+  let max_by_h = max 1 ((sh - reserve_bottom - v_pad) / rows) in
+  min max_by_w max_by_h |> min Render.base_gui_tile_px
 
 let cell_at_mouse board x y =
+  let ts = Render.gui_tile_px () in
   let height = board_pixel_height board in
   if y < 0 || y >= height then None
-  else Some { r = y / Render.tile_size; c = x / Render.tile_size }
+  else Some { r = y / ts; c = x / ts }
+
+let toggle_fullscreen_hotkey () =
+  if is_key_pressed Key.F11 then toggle_fullscreen ()
 
 let placement_message board coord result =
   match result with

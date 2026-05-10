@@ -54,35 +54,37 @@ let run_level_select_scene assets =
       level_files
   in
 
-  let window_width = get_screen_width () in
-  let window_height = get_screen_height () in
-
   let cols = 5 in
   let button_width = 150 in
   let button_height = 115 in
   let gap_x = 24 in
   let gap_y = 135 in
-  let total_width = (cols * button_width) + ((cols - 1) * gap_x) in
-  let start_x = (window_width - total_width) / 2 in
-  let start_y = 180 in
 
-  let level_buttons =
-    List.init (Array.length level_files) (fun i ->
-        let col = i mod cols in
-        let row = i / cols in
-        let x = start_x + (col * (button_width + gap_x)) in
-        let y = start_y + (row * gap_y) in
-        let label = "Level " ^ string_of_int (i + 1) in
-        let filename = level_files.(i) in
-        (i, x, y, label, fun () -> load_level filename))
+  let mk_layout window_width =
+    let total_width = (cols * button_width) + ((cols - 1) * gap_x) in
+    let start_x = (window_width - total_width) / 2 in
+    let start_y = 180 in
+    let level_buttons =
+      List.init (Array.length level_files) (fun i ->
+          let col = i mod cols in
+          let row = i / cols in
+          let x = start_x + (col * (button_width + gap_x)) in
+          let y = start_y + (row * gap_y) in
+          let label = "Level " ^ string_of_int (i + 1) in
+          let filename = level_files.(i) in
+          (i, x, y, label, fun () -> load_level filename))
+    in
+    let back_button =
+      [
+        ( start_x,
+          start_y + (2 * gap_y) + 20,
+          assets.back,
+          "Back",
+          fun () -> Home );
+      ]
+    in
+    (level_buttons, back_button)
   in
-
-  let back_button =
-    [
-      (start_x, start_y + (2 * gap_y) + 20, assets.back, "Back", fun () -> Home);
-    ]
-  in
-
   let draw_preview_button i x y label =
     let rect =
       Rectangle.create (float_of_int x) (float_of_int y)
@@ -115,8 +117,11 @@ let run_level_select_scene assets =
     else if is_key_pressed Key.Q || is_key_pressed Key.Escape then
       NextScene Home
     else (
+      toggle_fullscreen_hotkey ();
+      let window_width = get_screen_width () in
+      let window_height = get_screen_height () in
+      let level_buttons, back_button = mk_layout window_width in
       begin_drawing ();
-
       let bg_scale_x =
         float window_width /. float (Texture.width assets.background)
       in

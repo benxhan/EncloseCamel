@@ -18,9 +18,10 @@ let run_scene assets scene =
   | FileInput state -> run_file_input_scene assets state
 
 let () =
-  let board = load_starting_board () in
-  let width = max 960 (board_pixel_width board) in
-  let height = max 768 (window_height board) in
+  set_config_flags [ Window_resizable ];
+  (* Game board scales inside the viewport; menus use full window. *)
+  let width = 1024 in
+  let height = 768 in
   init_window width height "Enclose Camel GUI";
   set_target_fps 60;
   init_gui_textures ();

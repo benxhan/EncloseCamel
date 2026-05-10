@@ -8,6 +8,13 @@
     - Avoid mutating any game state; rendering is display-only. *)
 val render_board : Model.board -> unit
 
+(** Baseline texel grid (64); live GUI sizing is {!gui_tile_px}. *)
+val base_gui_tile_px : int
+
+val gui_tile_px : unit -> int
+val set_gui_tile_px : int -> unit
+
+(** Legacy alias for {!base_gui_tile_px}. *)
 val tile_size : int
 
 val info_panel_height : int
