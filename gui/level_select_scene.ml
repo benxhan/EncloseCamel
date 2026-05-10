@@ -24,6 +24,8 @@ let preview_color = function
   | GoldenApple -> Color.create 255 165 0 255
   | LavaBucket -> Color.create 140 80 40 255
   | Portal _ -> Color.create 160 90 220 255
+  | Mouse -> Color.create 150 150 150 255
+  | Cheese -> Color.create 255 220 0 255
 
 let draw_level_preview board x y w h =
   let rows = Array.length board.grid in

@@ -27,6 +27,8 @@ type texture_assets = {
   lava_bucket : Texture.t array;
   empty_bucket : Texture.t array;
   portal : Texture.t array;
+  mouse : Texture.t array;
+  cheese : Texture.t array;
 }
 
 let textures : texture_assets option ref = ref None
@@ -66,6 +68,8 @@ let load_gui_textures () =
           lava_bucket = load_texture_frames "lava_bucket";
           empty_bucket = load_texture_frames "empty_bucket";
           portal = load_texture_frames "portal";
+          mouse = load_texture_frames "mouse";
+          cheese = load_texture_frames "cheese";
         }
       in
       textures := Some assets;
@@ -125,6 +129,8 @@ let draw_board_gui ?(offset_x = 0) ?(offset_y = 0) board =
     lava_bucket;
     empty_bucket;
     portal;
+    mouse;
+    cheese;
   } =
     load_gui_textures ()
   in
@@ -141,6 +147,8 @@ let draw_board_gui ?(offset_x = 0) ?(offset_y = 0) board =
   let lava_bucket_tex = current_frame lava_bucket in
   let empty_bucket_tex = current_frame empty_bucket in
   let portal_tex = current_frame portal in
+  let mouse_tex = current_frame mouse in
+  let cheese_tex = current_frame cheese in
   Array.iteri
     (fun r row ->
       Array.iteri
@@ -177,7 +185,13 @@ let draw_board_gui ?(offset_x = 0) ?(offset_y = 0) board =
               draw_tile_texture ~offset_x ~offset_y texture r c
           | Portal id ->
               draw_tile_texture ~offset_x ~offset_y ~color:(portal_color id)
-                portal_tex r c)
+                portal_tex r c
+          | Mouse ->
+              draw_tile_texture ~offset_x ~offset_y mouse_tex r
+                c
+          | Cheese ->
+              draw_tile_texture ~offset_x ~offset_y cheese_tex r
+                c)
         row)
     board.grid;
   let rows = Array.length board.grid in
@@ -230,7 +244,7 @@ let render_board _board =
               ANSITerminal.print_string
                 [ ANSITerminal.white; ANSITerminal.on_magenta ]
                 (string_of_int id)
-          | Cherry | Bees | GoldenApple | LavaBucket ->
+          | Cherry | Bees | GoldenApple | LavaBucket | Mouse | Cheese ->
               let props = properties_of tile in
               ANSITerminal.print_string
                 [ ANSITerminal.white; ANSITerminal.on_magenta ]
@@ -261,7 +275,7 @@ let str_render_board board =
     | Wall -> "B "
     | Blank -> "G "
     | Portal id -> string_of_int id ^ " "
-    | (Cherry | Bees | GoldenApple | LavaBucket) as t ->
+    | (Cherry | Bees | GoldenApple | LavaBucket | Mouse | Cheese) as t ->
         let props = properties_of t in
         String.make 1 props.file_char ^ " "
   in

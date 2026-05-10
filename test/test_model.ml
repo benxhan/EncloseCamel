@@ -17,6 +17,8 @@ let string_of_tile = function
   | GoldenApple -> "GoldenApple"
   | Portal id -> "Portal " ^ string_of_int id
   | LavaBucket -> "LavaBucket"
+  | Mouse -> "Mouse"
+  | Cheese -> "Cheese"
 
 (* Helper to create a standard test board Camel is at (2,2), Water is at (1,1),
    and we manually add a Wall at (3,3) *)
@@ -530,6 +532,71 @@ let portal_tests =
                  "Expected Open since second portal reaches the edge" );
        ]
 
+let a_star_tests =
+  "a star pathfinding tests"
+  >::: [
+         ( "direct_path" >:: fun _ ->
+           let b =
+             init ~width:5 ~height:5 ~camel:{ r = 4; c = 4 } ~water:[]
+               ~lava_buckets:[] ~walls_available:10 ~max_score:0
+           in
+           set_tile b { r = 0; c = 0 } Mouse;
+           set_tile b { r = 0; c = 3 } Cheese;
+           (* Expected to move right from (0,0) towards (0,3) -> next step is
+              (0,1) *)
+           assert_equal
+             (Some { r = 0; c = 1 })
+             (next_mouse_step b { r = 0; c = 0 } { r = 0; c = 3 }) );
+         ( "already_adjacent" >:: fun _ ->
+           let b =
+             init ~width:5 ~height:5 ~camel:{ r = 4; c = 4 } ~water:[]
+               ~lava_buckets:[] ~walls_available:10 ~max_score:0
+           in
+           set_tile b { r = 0; c = 0 } Mouse;
+           set_tile b { r = 0; c = 1 } Cheese;
+           assert_equal (Some { r = 0; c = 1 })
+             (next_mouse_step b { r = 0; c = 0 } { r = 0; c = 1 }) );
+         ( "obstacle_avoidance" >:: fun _ ->
+           let b =
+             init ~width:5 ~height:5 ~camel:{ r = 4; c = 4 } ~water:[]
+               ~lava_buckets:[] ~walls_available:10 ~max_score:0
+           in
+           set_tile b { r = 0; c = 0 } Mouse;
+           set_tile b { r = 0; c = 2 } Cheese;
+           set_tile b { r = 0; c = 1 } Wall;
+           (* Direct path right (0,1) is blocked by Wall. Must go down to
+              (1,0) *)
+           assert_equal
+             (Some { r = 1; c = 0 })
+             (next_mouse_step b { r = 0; c = 0 } { r = 0; c = 2 }) );
+         ( "unreachable" >:: fun _ ->
+           let b =
+             init ~width:5 ~height:5 ~camel:{ r = 4; c = 4 } ~water:[]
+               ~lava_buckets:[] ~walls_available:10 ~max_score:0
+           in
+           set_tile b { r = 0; c = 0 } Mouse;
+           set_tile b { r = 0; c = 2 } Cheese;
+           (* Box the mouse in completely *)
+           set_tile b { r = 0; c = 1 } Wall;
+           set_tile b { r = 1; c = 0 } Wall;
+           set_tile b { r = 1; c = 1 } Wall;
+           assert_equal None
+             (next_mouse_step b { r = 0; c = 0 } { r = 0; c = 2 }) );
+         ( "portal_treated_as_wall" >:: fun _ ->
+           let b =
+             init ~width:5 ~height:5 ~camel:{ r = 4; c = 4 } ~water:[]
+               ~lava_buckets:[] ~walls_available:10 ~max_score:0
+           in
+           set_tile b { r = 0; c = 0 } Mouse;
+           set_tile b { r = 0; c = 2 } Cheese;
+           set_tile b { r = 0; c = 1 } (Portal 1);
+           (* Direct path right (0,1) is blocked by Portal. Must go down to
+              (1,0) *)
+           assert_equal
+             (Some { r = 1; c = 0 })
+             (next_mouse_step b { r = 0; c = 0 } { r = 0; c = 2 }) );
+       ]
+
 let all_tests =
   "all model tests"
   >::: [
@@ -539,6 +606,7 @@ let all_tests =
          place_wall_tests;
          lava_buckets_tests;
          portal_tests;
+         a_star_tests;
        ]
 
 let _ = run_test_tt_main all_tests

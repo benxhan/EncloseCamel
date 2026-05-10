@@ -26,9 +26,11 @@ type tile =
   | GoldenApple
   | Portal of int
   | LavaBucket
+  | Mouse
+  | Cheese
+      (** A list of all unparameterized tiles, useful for parsing configuration
+          characters. *)
 
-(** A list of all unparameterized tiles, useful for parsing configuration
-    characters. *)
 val base_tiles : tile list
 
 type tile_properties = {
@@ -53,13 +55,20 @@ val properties_of : tile -> tile_properties
     - [walls_remaining] — the number of base walls the player has remaining.
     - [max_score] — the maximum score for this level.
     - [camel_loc] — the camel's location.
-    - [tip] — optional hint text loaded from disk; [None] hides the footer. *)
+    - [tip] — optional hint text loaded from disk; [None] hides the footer.
+    - [initial_grid] — a deep copy of the starting board grid.
+    - [initial_walls] — the starting wall budget.
+    - [needs_reset] — a flag indicating whether the board should reset on the
+      next turn. *)
 type board = {
   grid : tile array array;
   walls_remaining : int;
   max_score : int;
   camel_loc : coordinate;
   tip : string option;
+  initial_grid : tile array array;
+  initial_walls : int;
+  needs_reset : bool;
 }
 
 (** The outcome of a [place_wall] attempt.
@@ -168,3 +177,11 @@ val neighbors4 : board -> coordinate -> coordinate list
       reachable coordinates (including the camel itself) and [score] is the
       count of those reachable tiles. *)
 val reachable_from_camel : board -> enclosed_state
+
+(** [next_mouse_step board mouse_loc cheese_loc] calculates the next single step
+    the mouse should take using A* pathfinding to reach the cheese.
+    - Returns [Some coordinate] containing the next adjacent tile to move to.
+    - Returns [None] if there is no valid path, or if the mouse is already
+      adjacent to the cheese (Manhattan distance == 1).
+    - respects [walkable] properties of tiles (e.g. going around Walls). *)
+val next_mouse_step : board -> coordinate -> coordinate -> coordinate option
