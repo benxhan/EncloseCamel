@@ -65,7 +65,7 @@ let run_level_select_scene assets =
   let mk_layout window_width =
     let total_width = (cols * button_width) + ((cols - 1) * gap_x) in
     let start_x = (window_width - total_width) / 2 in
-    let start_y = 180 in
+    let start_y = 230 in
     let level_buttons =
       List.init (Array.length level_files) (fun i ->
           let col = i mod cols in
