@@ -13,9 +13,22 @@ type tile =
   | GoldenApple
   | Portal of int
   | LavaBucket
+  | Mouse
+  | Cheese
 
 let base_tiles =
-  [ Camel; Water; Wall; Blank; Cherry; Bees; GoldenApple; LavaBucket ]
+  [
+    Camel;
+    Water;
+    Wall;
+    Blank;
+    Cherry;
+    Bees;
+    GoldenApple;
+    LavaBucket;
+    Mouse;
+    Cheese;
+  ]
 
 type tile_properties = {
   points : int;
@@ -33,6 +46,8 @@ let properties_of = function
   | Camel -> { points = 1; walkable = true; file_char = 'C' }
   | Water -> { points = 0; walkable = false; file_char = 'W' }
   | Wall -> { points = 0; walkable = false; file_char = 'B' }
+  | Mouse -> { points = 0; walkable = false; file_char = 'M' }
+  | Cheese -> { points = 0; walkable = true; file_char = 'Z' }
 
 type board = {
   grid : tile array array;
@@ -40,6 +55,9 @@ type board = {
   max_score : int;
   camel_loc : coordinate;
   tip : string option;
+  initial_grid : tile array array;
+  initial_walls : int;
+  needs_reset : bool;
 }
 
 type place_result =
@@ -96,7 +114,17 @@ let init ~width ~height ~camel ~water ~lava_buckets ~walls_available ~max_score
   List.iter (fun { r; c } -> grid.(r).(c) <- LavaBucket) lava_buckets;
   grid.(camel.r).(camel.c) <- Camel;
 
-  { grid; walls_remaining = walls_available; max_score; camel_loc = camel; tip = None }
+  let initial_grid = Array.map Array.copy grid in
+  {
+    grid;
+    walls_remaining = walls_available;
+    max_score;
+    camel_loc = camel;
+    initial_grid;
+    initial_walls = walls_available;
+    needs_reset = false;
+    tip = None
+  }
 
 (* [in_bounds board coord] returns [true] if [coord] is on the board.
 
@@ -106,6 +134,17 @@ let init ~width ~height ~camel ~water ~lava_buckets ~walls_available ~max_score
 
 let get_tile _board _coord = _board.grid.(_coord.r).(_coord.c)
 let set_tile _board _coord _tile = _board.grid.(_coord.r).(_coord.c) <- _tile
+
+let find_tile board target_tile =
+  let rec aux r c =
+    if r >= Array.length board.grid then None
+    else if c >= Array.length board.grid.(0) then aux (r + 1) 0
+    else if board.grid.(r).(c) = target_tile then Some { r; c }
+    else aux r (c + 1)
+  in
+  aux 0 0
+
+let are_adjacent c1 c2 = abs (c1.r - c2.r) + abs (c1.c - c2.c) = 1
 
 let check_coord_placement_log _board _coord =
   let in_bounds (_board : board) (_coord : coordinate) =
@@ -211,33 +250,145 @@ let current_bonus_walls board =
   | Open -> 0
   | Enclosed state -> state.bonus_walls
 
+let next_mouse_step board mouse_loc cheese_loc =
+  let manhattan c1 c2 = abs (c1.r - c2.r) + abs (c1.c - c2.c) in
+  if manhattan mouse_loc cheese_loc <= 1 then Some cheese_loc
+  else
+    let height = Array.length board.grid in
+    let width = Array.length board.grid.(0) in
+    let in_bounds r c = r >= 0 && r < height && c >= 0 && c < width in
+    let is_walkable r c =
+      let tile = board.grid.(r).(c) in
+      match tile with
+      | Portal _ -> false
+      | Cheese -> true
+      | _ -> (properties_of tile).walkable
+    in
+    let neighbors c =
+      let dirs = [ (-1, 0); (1, 0); (0, -1); (0, 1) ] in
+      List.filter_map
+        (fun (dr, dc) ->
+          let nr, nc = (c.r + dr, c.c + dc) in
+          if in_bounds nr nc && is_walkable nr nc then Some { r = nr; c = nc }
+          else None)
+        dirs
+    in
+    let rec search queue visited =
+      match queue with
+      | [] -> None
+      | (_, g, curr, path) :: rest ->
+          if manhattan curr cheese_loc <= 1 then
+            match List.rev path with
+            | [] -> None
+            | first_step :: _ -> Some first_step
+          else if List.exists (fun v -> v = curr) visited then
+            search rest visited
+          else
+            let visited' = curr :: visited in
+            let next_nodes = neighbors curr in
+            let new_items =
+              List.filter_map
+                (fun n ->
+                  if List.exists (fun v -> v = n) visited' then None
+                  else
+                    let g' = g + 1 in
+                    let h' = manhattan n cheese_loc in
+                    let f' = g' + h' in
+                    Some (f', g', n, n :: path))
+                next_nodes
+            in
+            let queue' =
+              List.sort
+                (fun (f1, _, _, _) (f2, _, _, _) -> compare f1 f2)
+                (rest @ new_items)
+            in
+            search queue' visited'
+    in
+    let start_queue = [ (manhattan mouse_loc cheese_loc, 0, mouse_loc, []) ] in
+    search start_queue []
+
 let place_wall board coord =
-  match check_coord_placement board coord with
-  | Out_of_bounds -> Error Out_of_bounds
-  | Occupied ->
-      (* if it's already a wall, remove it and adjust budget *)
-      if get_tile board coord = Wall then (
-        let old_bonus = current_bonus_walls board in
-        set_tile board coord Blank;
-        let new_bonus = current_bonus_walls board in
-        let new_board =
-          {
-            board with
-            walls_remaining = board.walls_remaining + 1 - old_bonus + new_bonus;
-          }
-        in
-        Ok new_board)
-      else Error Occupied
-  | Ok ->
-      if board.walls_remaining <= 0 then Error Occupied
-      else
-        let old_bonus = current_bonus_walls board in
-        set_tile board coord Wall;
-        let new_bonus = current_bonus_walls board in
-        let new_board =
-          {
-            board with
-            walls_remaining = board.walls_remaining - 1 - old_bonus + new_bonus;
-          }
-        in
-        Ok new_board
+  if board.needs_reset then
+    let grid_copy = Array.map Array.copy board.initial_grid in
+    Stdlib.Ok
+      {
+        board with
+        grid = grid_copy;
+        walls_remaining = board.initial_walls;
+        needs_reset = false;
+      }
+  else
+    match check_coord_placement board coord with
+    | Out_of_bounds -> Error Out_of_bounds
+    | Occupied ->
+        (* if it's already a wall, remove it and adjust budget *)
+        if get_tile board coord = Wall then (
+          let old_bonus = current_bonus_walls board in
+          set_tile board coord Blank;
+          let new_bonus = current_bonus_walls board in
+          let new_board =
+            {
+              board with
+              walls_remaining =
+                board.walls_remaining + 1 - old_bonus + new_bonus;
+            }
+          in
+          match find_tile new_board Mouse with
+          | None -> Stdlib.Ok new_board
+          | Some mouse_coord -> (
+              match find_tile new_board Cheese with
+              | None -> Stdlib.Ok new_board
+              | Some cheese_coord -> (
+                  match next_mouse_step new_board mouse_coord cheese_coord with
+                  | None -> Stdlib.Ok new_board
+                  | Some next_step -> (
+                      set_tile new_board mouse_coord Blank;
+                      match get_tile new_board next_step with
+                      | Cheese ->
+                          let grid_copy = Array.map Array.copy new_board.initial_grid in
+                          Stdlib.Ok
+                            {
+                              new_board with
+                              grid = grid_copy;
+                              walls_remaining = new_board.initial_walls;
+                              needs_reset = false;
+                            }
+                      | _ ->
+                          set_tile new_board next_step Mouse;
+                          Stdlib.Ok new_board))))
+        else Error Occupied
+    | Ok -> (
+        if board.walls_remaining <= 0 then Error Occupied
+        else
+          let old_bonus = current_bonus_walls board in
+          set_tile board coord Wall;
+          let new_bonus = current_bonus_walls board in
+          let new_board =
+            {
+              board with
+              walls_remaining =
+                board.walls_remaining - 1 - old_bonus + new_bonus;
+            }
+          in
+          match find_tile new_board Mouse with
+          | None -> Stdlib.Ok new_board
+          | Some mouse_coord -> (
+              match find_tile new_board Cheese with
+              | None -> Stdlib.Ok new_board
+              | Some cheese_coord -> (
+                  match next_mouse_step new_board mouse_coord cheese_coord with
+                  | None -> Stdlib.Ok new_board
+                  | Some next_step -> (
+                      set_tile new_board mouse_coord Blank;
+                      match get_tile new_board next_step with
+                      | Cheese ->
+                          let grid_copy = Array.map Array.copy new_board.initial_grid in
+                          Stdlib.Ok
+                            {
+                              new_board with
+                              grid = grid_copy;
+                              walls_remaining = new_board.initial_walls;
+                              needs_reset = false;
+                            }                      | _ ->
+                          set_tile new_board next_step Mouse;
+                          Stdlib.Ok new_board))))

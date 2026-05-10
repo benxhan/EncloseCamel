@@ -11,6 +11,9 @@ let test_render_board _ =
       max_score = 10;
       camel_loc = { r = 0; c = 0 };
       tip = None;
+      initial_grid = [| [| Camel; Blank |]; [| Blank; Water |] |];
+      initial_walls = 3;
+      needs_reset = false;
     }
   in
   let result = str_render_board board1 in
@@ -30,6 +33,9 @@ let test_render_empty _ =
       max_score = 10;
       camel_loc = { r = 0; c = 0 };
       tip = None;
+      initial_grid = [| [||] |];
+      initial_walls = 3;
+      needs_reset = false;
     }
   in
   let result = str_render_board board in

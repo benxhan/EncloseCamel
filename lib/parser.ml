@@ -148,5 +148,15 @@ let load_board (filename : string) : Model.board =
     | None -> failwith "load_board: no camel tile found"
     | Some coord -> coord
   in
+  let initial_grid = Array.map Array.copy grid in
   (* Assemble the board *)
-  { Model.grid; walls_remaining; max_score; camel_loc; tip = tip_opt }
+  {
+    Model.grid;
+    walls_remaining;
+    max_score;
+    camel_loc;
+    initial_grid;
+    initial_walls = walls_remaining;
+    needs_reset = false;
+    tip = tip_opt
+  }

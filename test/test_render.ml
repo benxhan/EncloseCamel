@@ -17,6 +17,9 @@ let test_str_render_board _ =
       max_score = 50;
       camel_loc = { r = 0; c = 0 };
       tip = None;
+      initial_grid = Array.map Array.copy grid;
+      initial_walls = 10;
+      needs_reset = false;
     }
   in
   let s = Render.str_render_board board in
