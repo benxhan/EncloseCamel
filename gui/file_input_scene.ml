@@ -87,10 +87,10 @@ let run_file_input_scene assets state =
       draw_text_hcenter prompt_text prompt_y 20 prompt_color;
       draw_rectangle input_box_x input_box_y input_box_width input_box_height Color.white;
       draw_rectangle_lines input_box_x input_box_y input_box_width input_box_height Color.black;
-      draw_text visible_text (input_box_x + 10) (input_box_y + 10) 20 Color.white;
+      draw_text visible_text (input_box_x + 10) (input_box_y + 10) 20 Color.black;
       if new_cursor_visible then begin
         let cursor_x = input_box_x + 10 + measure_text visible_text 20 in
-        draw_line cursor_x (input_box_y + 5) cursor_x (input_box_y + input_box_height - 5) Color.white
+        draw_line cursor_x (input_box_y + 5) cursor_x (input_box_y + input_box_height - 5) Color.black
       end;
       draw_button button_x load_button_y assets.load_level "Load" scale;
       draw_button button_x back_button_y assets.back "Back" scale;
