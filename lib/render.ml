@@ -98,9 +98,9 @@ let current_frame frames =
   else frames.(int_of_float (floor seconds) mod frame_count)
 
 let portal_color id =
-  let r = (id * 50 + 100) mod 256 in
-  let g = (id * 100 + 50) mod 256 in
-  let b = (id * 150 + 200) mod 256 in
+  let r = ((id * 50) + 100) mod 256 in
+  let g = ((id * 100) + 50) mod 256 in
+  let b = ((id * 150) + 200) mod 256 in
   Color.create r g b 255
 
 let draw_tile_texture ?(color = Color.white) ?(offset_x = 0) ?(offset_y = 0) texture r c =
@@ -112,7 +112,22 @@ let draw_tile_texture ?(color = Color.white) ?(offset_x = 0) ?(offset_y = 0) tex
   draw_rectangle_lines x y ts ts (Color.create 255 255 255 20)
 
 let draw_board_gui ?(offset_x = 0) ?(offset_y = 0) board =
-  let { camel; water; wall; blank; enclosed_blank; corn_camel; cherry; bees; golden_apple; lava_bucket; empty_bucket; portal } = load_gui_textures () in
+  let {
+    camel;
+    water;
+    wall;
+    blank;
+    enclosed_blank;
+    corn_camel;
+    cherry;
+    bees;
+    golden_apple;
+    lava_bucket;
+    empty_bucket;
+    portal;
+  } =
+    load_gui_textures ()
+  in
   let win_state = reachable_from_camel board in
   let camel_tex = current_frame camel in
   let water_tex = current_frame water in
@@ -150,7 +165,8 @@ let draw_board_gui ?(offset_x = 0) ?(offset_y = 0) board =
               draw_tile_texture ~offset_x ~offset_y texture r c
           | Cherry -> draw_tile_texture ~offset_x ~offset_y cherry_tex r c
           | Bees -> draw_tile_texture ~offset_x ~offset_y bees_tex r c
-          | GoldenApple -> draw_tile_texture ~offset_x ~offset_y golden_apple_tex r c
+          | GoldenApple ->
+              draw_tile_texture ~offset_x ~offset_y golden_apple_tex r c
           | LavaBucket ->
               let texture =
                 match win_state with
@@ -159,7 +175,9 @@ let draw_board_gui ?(offset_x = 0) ?(offset_y = 0) board =
                     if tiles.(r).(c) then empty_bucket_tex else lava_bucket_tex
               in
               draw_tile_texture ~offset_x ~offset_y texture r c
-          | Portal id -> draw_tile_texture ~offset_x ~offset_y ~color:(portal_color id) portal_tex r c)
+          | Portal id ->
+              draw_tile_texture ~offset_x ~offset_y ~color:(portal_color id)
+                portal_tex r c)
         row)
     board.grid;
   let rows = Array.length board.grid in
@@ -232,8 +250,7 @@ let render_board _board =
       ^ ")")
   in
   print_endline
-    ("Number of walls remaining: "
-    ^ string_of_int (_board.walls_remaining + !(_board.bonus_walls)))
+    ("Number of walls remaining: " ^ string_of_int _board.walls_remaining)
 
 let str_render_board board =
   let buf = Buffer.create 128 in

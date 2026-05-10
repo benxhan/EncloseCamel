@@ -46,21 +46,14 @@ val properties_of : tile -> tile_properties
 
 (** The full state of the game board.
     - [grid] — a row-major 2-D array of tiles, indexed as [grid.(r).(c)].
-    - [walls_remaining] — the number of walls the player may still place.
-    - [bonus_walls] — the number of bonus walls the player has earned from
-      enclosing lava_buckets, which can be used after the initial budget is
-      exhausted.
-    - [max_score] — the maximum possible score achievable on this board.
-    - [camel_loc] — the coordinate of the [Camel] on the grid.
-    - [consumed_lava_buckets] — a list of coordinates of [LavaBucket] tiles that
-      have already been enclosed and their bonus walls claimed. *)
+    - [walls_remaining] — the number of base walls the player has remaining.
+    - [max_score] — the maximum score for this level.
+    - [camel_loc] — the camel's location. *)
 type board = {
   grid : tile array array;
   walls_remaining : int;
-  bonus_walls : int ref;
   max_score : int;
   camel_loc : coordinate;
-  consumed_lava_buckets : coordinate list ref;
 }
 
 (** The outcome of a [place_wall] attempt.

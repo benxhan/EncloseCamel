@@ -8,10 +8,8 @@ let test_render_board _ =
     {
       grid = [| [| Camel; Blank |]; [| Blank; Water |] |];
       walls_remaining = 3;
-      bonus_walls = ref 0;
       max_score = 10;
       camel_loc = { r = 0; c = 0 };
-      consumed_lava_buckets = ref [];
     }
   in
   let result = str_render_board board1 in
@@ -28,10 +26,8 @@ let test_render_empty _ =
     {
       grid = [| [||] |];
       walls_remaining = 3;
-      bonus_walls = ref 0;
       max_score = 10;
       camel_loc = { r = 0; c = 0 };
-      consumed_lava_buckets = ref [];
     }
   in
   let result = str_render_board board in
