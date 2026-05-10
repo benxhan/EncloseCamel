@@ -60,6 +60,33 @@ let rec loop board =
 
 let default_level_file = "data/logs.txt"
 
+let level_files =
+  [|
+    "data/level1.txt";
+    "data/level2.txt";
+    "data/level3.txt";
+    "data/level4.txt";
+    "data/level5.txt";
+    "data/level6.txt";
+    "data/level7.txt";
+    "data/level8.txt";
+    "data/level9.txt";
+    "data/level10.txt";
+  |]
+
+let select_level_file () =
+  print_endline "\nSelect a level:";
+  for i = 0 to Array.length level_files - 1 do
+    Printf.printf "[%d] Level %d\n" (i + 1) (i + 1)
+  done;
+  print_string "Enter level number 1-10: ";
+
+  match int_of_string_opt (String.trim (read_line ())) with
+  | Some n when n >= 1 && n <= 10 -> level_files.(n - 1)
+  | _ ->
+      print_endline "Invalid level. Using Level 1.";
+      level_files.(0)
+
 (* [write_default_level_file ()] overwrites [default_level_file] with the
    original default board layout. Used when [data/basicworld.txt] is missing or
    cannot be parsed. *)
