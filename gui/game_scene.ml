@@ -8,7 +8,7 @@ open Render
 let run_game_scene assets board =
   let scale = 0.15 in
   let layout board =
-    Render.set_gui_tile_px (compute_gui_tile_px board);
+    set_gui_tile_px (compute_gui_tile_px board);
     let window_width = get_screen_width () in
     let board_width = board_pixel_width board in
     let board_offset_x = (window_width - board_width) / 2 in

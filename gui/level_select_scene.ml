@@ -61,9 +61,6 @@ let run_level_select_scene assets =
   let button_height = 115 in
   let gap_x = 24 in
   let gap_y = 135 in
-  let total_width = (cols * button_width) + ((cols - 1) * gap_x) in
-  let start_x = (window_width - total_width) / 2 in
-  let start_y = 230 in
 
   let mk_layout window_width =
     let total_width = (cols * button_width) + ((cols - 1) * gap_x) in
