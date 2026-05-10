@@ -34,6 +34,10 @@ val parse_error_to_string : parse_error -> string
     - Infer [board.camel] from the position of the single ['C'] character.
     - Infer [board.walls_remaining] by reading the first line of the file.
     - Infer [board.max_score] by reading the second line of the file.
+    - Optionally, after all grid rows, a line consisting of [TIP] or [TIPS] (any
+      case, ignoring surrounding whitespace on that line only) marks the start of a
+      tips section; all subsequent lines become [board.tip]. If omitted or blank,
+      [board.tip] is [None].
     - Raise [Failure] with a descriptive message on any of the following:
     - The file does not exist or cannot be opened.
     - The file is empty (zero non-empty lines).

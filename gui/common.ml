@@ -67,20 +67,78 @@ let board_pixel_width board =
   Array.length board.grid.(0) * Render.gui_tile_px ()
 
 let board_pixel_height board = Array.length board.grid * Render.gui_tile_px ()
-
-
-
-let compute_gui_tile_px board =
+let compute_gui_tile_px ?(reserve_tip_footer = 0) board =
   let sw = get_screen_width () in
   let sh = get_screen_height () in
   let rows = Array.length board.grid in
   let cols = Array.length board.grid.(0) in
   let h_pad = 32 in
   let v_pad = 16 in
-  let reserve_bottom = Render.info_panel_height + 80 in
+  let reserve_bottom =
+    Render.info_panel_height + 80 + reserve_tip_footer
+  in
   let max_by_w = max 1 ((sw - (2 * h_pad)) / cols) in
   let max_by_h = max 1 ((sh - reserve_bottom - v_pad) / rows) in
   min max_by_w max_by_h |> min Render.base_gui_tile_px
+
+let tip_font_size = 14
+let tip_line_step = tip_font_size + 5
+
+let tip_wrap_width_px board =
+  (* Match board footprint for readability; avoids overflow when centered. *)
+  max 96 (board_pixel_width board - 24)
+
+let wrapped_tip_lines_for_board board text =
+  let max_px = tip_wrap_width_px board in
+  let wrap_paragraph para =
+    if para = "" then []
+    else
+      let raw_words =
+        String.split_on_char ' ' para
+        |> List.map String.trim
+        |> List.filter (fun w -> String.length w > 0)
+      in
+      let lines_rev, last_line =
+        List.fold_left
+          (fun ((acc : string list), curr) raw_w ->
+            let cand =
+              if curr = "" then raw_w else curr ^ " " ^ raw_w
+            in
+            if measure_text cand tip_font_size <= max_px then (acc, cand)
+            else
+              match curr with
+              | "" ->
+                  (* lone word overflows width — still emit as its own row *)
+                  (raw_w :: acc, "")
+              | _ ->
+                  (curr :: acc, raw_w))
+          ([], "")
+          raw_words
+      in
+      List.rev
+        (match last_line with "" -> lines_rev | _ -> last_line :: lines_rev)
+  in
+  String.split_on_char '\n' text
+  |> List.concat_map wrap_paragraph
+
+let tip_footer_pixel_height board =
+  match board.tip with
+  | None -> 0
+  | Some txt ->
+      let lines = wrapped_tip_lines_for_board board txt in
+      if lines = [] then 0
+      else (
+        (* Top gap after Back control + stacked lines + trailing margin *)
+        let block = List.length lines * tip_line_step in
+        12 + block + 8)
+
+let fit_gui_tile_px_for_viewport board =
+  let reserve = ref 0 in
+  for _round = 0 to 7 do
+    Render.set_gui_tile_px
+      (compute_gui_tile_px ~reserve_tip_footer:!reserve board);
+    reserve := tip_footer_pixel_height board
+  done
 
 let cell_at_mouse board x y =
   let ts = Render.gui_tile_px () in
@@ -129,3 +187,17 @@ let draw_status_panel ?(offset_x = 0) board status_message =
   let panel_y = board_pixel_height board in
   draw_rectangle offset_x panel_y width Render.info_panel_height (Color.create 110 155 80 255);
   draw_text_info ~offset_x board status_message
+
+let draw_tip_section ~board_offset_x ~y_top board =
+  match board.tip with
+  | None -> ()
+  | Some txt ->
+      let lines = wrapped_tip_lines_for_board board txt in
+      if lines = [] then ()
+      else
+        let tint = Color.create 238 246 229 255 in
+        let x0 = board_offset_x + 10 in
+        List.iteri
+          (fun i line ->
+             draw_text line x0 (y_top + (i * tip_line_step)) tip_font_size tint)
+          lines

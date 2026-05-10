@@ -52,12 +52,14 @@ val properties_of : tile -> tile_properties
     - [grid] — a row-major 2-D array of tiles, indexed as [grid.(r).(c)].
     - [walls_remaining] — the number of base walls the player has remaining.
     - [max_score] — the maximum score for this level.
-    - [camel_loc] — the camel's location. *)
+    - [camel_loc] — the camel's location.
+    - [tip] — optional hint text loaded from disk; [None] hides the footer. *)
 type board = {
   grid : tile array array;
   walls_remaining : int;
   max_score : int;
   camel_loc : coordinate;
+  tip : string option;
 }
 
 (** The outcome of a [place_wall] attempt.

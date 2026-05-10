@@ -11,7 +11,7 @@ let test_parse_coordinate _ =
   assert_equal (Error Parser.Bad_format) (Parser.parse_coordinate "[1 2]");
   assert_equal (Error (Parser.Not_an_int "x")) (Parser.parse_coordinate "[x,2]")
 
-let test_load_board ctx =
+let test_load_board _ =
   let filename = "test_board.txt" in
   let oc = open_out filename in
   Printf.fprintf oc "10\n";
@@ -35,12 +35,32 @@ let test_load_board ctx =
       [| Portal 0; Portal 1; Portal 2; Portal 9 |];
     |]
   in
-  assert_equal expected_grid board.grid
-    ~msg:"grid parsing fails or does not match"
+  assert_equal expected_grid board.grid ~msg:"grid parsing fails or does not match";
+  (match board.tip with
+   | None -> ()
+   | Some _ -> assert_failure "expected omitting tips yields None")
+
+let test_load_board_with_tip _ =
+  let filename = "test_tip_board.txt" in
+  let oc = open_out filename in
+  Printf.fprintf oc "4\n";
+  Printf.fprintf oc "99\n";
+  Printf.fprintf oc "C G\n";
+  Printf.fprintf oc "G G\n";
+  Printf.fprintf oc "TIPS\n";
+  Printf.fprintf oc "Cherries reward extra points.\n";
+  Printf.fprintf oc "Mind the bees!\n";
+  close_out oc;
+  let board = Parser.load_board filename in
+  Sys.remove filename;
+  assert_equal
+    (Some "Cherries reward extra points.\nMind the bees!")
+    board.tip
 
 let tests =
   "Parser Tests"
   >::: [
          "test_parse_coordinate" >:: test_parse_coordinate;
          "test_load_board" >:: test_load_board;
+         "test_load_board_with_tip" >:: test_load_board_with_tip;
        ]

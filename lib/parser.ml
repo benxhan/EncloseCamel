@@ -46,8 +46,8 @@ let load_board (filename : string) : Model.board =
     collect []
   in
 
-  (* Split walls_remaining and max_score from grid lines *)
-  let walls_remaining, max_score, grid_lines =
+  (* Split metadata lines vs optional TIP footer vs grid *)
+  let walls_remaining, max_score, after_header_lines =
     match lines with
     | [] -> failwith "load_board: file is empty"
     | hd :: tl -> (
@@ -68,9 +68,31 @@ let load_board (filename : string) : Model.board =
                 | Some score -> (walls, score, rest))))
   in
 
-  (* Strip away spaces and empty lines *)
+  let grid_raw_lines_no_tip, tip_opt =
+    let is_tip_marker_line line =
+      match String.lowercase_ascii (String.trim line) with
+      | "tip" | "tips" -> true
+      | _ -> false
+    in
+    let rec take_grid acc = function
+      | [] -> (List.rev acc, None)
+      | line :: rest when is_tip_marker_line line ->
+          let merged =
+            match rest with
+            | [] -> ""
+            | _ -> String.concat "\n" rest
+          in
+          let s = String.trim merged in
+          if s = "" then (List.rev acc, None)
+          else (List.rev acc, Some s)
+      | line :: rest -> take_grid (line :: acc) rest
+    in
+    take_grid [] after_header_lines
+  in
+
+  (* Strip spaces and blank lines inside the tile grid *)
   let rows =
-    grid_lines
+    grid_raw_lines_no_tip
     |> List.map (fun s -> String.split_on_char ' ' s |> String.concat "")
     |> List.filter (fun s -> String.length s > 0)
   in
@@ -128,4 +150,4 @@ let load_board (filename : string) : Model.board =
     | Some coord -> coord
   in
   (* Assemble the board *)
-  { Model.grid; walls_remaining; max_score; camel_loc }
+  { Model.grid; walls_remaining; max_score; camel_loc; tip = tip_opt }

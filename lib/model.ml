@@ -39,6 +39,7 @@ type board = {
   walls_remaining : int;
   max_score : int;
   camel_loc : coordinate;
+  tip : string option;
 }
 
 type place_result =
@@ -95,7 +96,7 @@ let init ~width ~height ~camel ~water ~lava_buckets ~walls_available ~max_score
   List.iter (fun { r; c } -> grid.(r).(c) <- LavaBucket) lava_buckets;
   grid.(camel.r).(camel.c) <- Camel;
 
-  { grid; walls_remaining = walls_available; max_score; camel_loc = camel }
+  { grid; walls_remaining = walls_available; max_score; camel_loc = camel; tip = None }
 
 (* [in_bounds board coord] returns [true] if [coord] is on the board.
 

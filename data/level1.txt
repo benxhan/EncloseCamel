@@ -7,3 +7,6 @@ WGGCGGW
 WGGGGGG
 WGGGGGW
 WWGWWWW
+
+TIP
+Click on empty grass squares to place walls. Try to enclose the camel with as much space as possible with the limited number of walls you have.

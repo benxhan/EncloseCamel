@@ -11,7 +11,13 @@ let test_str_render_board _ =
     |]
   in
   let board =
-    { grid; walls_remaining = 10; max_score = 50; camel_loc = { r = 0; c = 0 } }
+    {
+      grid;
+      walls_remaining = 10;
+      max_score = 50;
+      camel_loc = { r = 0; c = 0 };
+      tip = None;
+    }
   in
   let s = Render.str_render_board board in
   (* We expect Camel to be 'C', Blank to be 'G', Cherry to be 'R', etc. *)

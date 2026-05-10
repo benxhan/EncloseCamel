@@ -23,7 +23,11 @@ let run_home_scene assets =
             assets.load_level,
             "Load Level",
             fun () -> NextScene (FileInput ("", true, None)) );
-          (x, start_y + 200, assets.credits, "Credits", fun () -> NextScene Credits);
+          ( x,
+            start_y + 200,
+            assets.credits,
+            "Credits",
+            fun () -> NextScene Credits );
         ]
       in
       begin_drawing ();

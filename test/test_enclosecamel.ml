@@ -10,6 +10,7 @@ let test_render_board _ =
       walls_remaining = 3;
       max_score = 10;
       camel_loc = { r = 0; c = 0 };
+      tip = None;
     }
   in
   let result = str_render_board board1 in
@@ -28,6 +29,7 @@ let test_render_empty _ =
       walls_remaining = 3;
       max_score = 10;
       camel_loc = { r = 0; c = 0 };
+      tip = None;
     }
   in
   let result = str_render_board board in
