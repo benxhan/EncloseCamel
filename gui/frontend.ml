@@ -13,7 +13,7 @@ let run_scene assets scene =
   match scene with
   | Home -> run_home_scene assets
   | LevelSelect -> run_level_select_scene assets
-  | GameScene board -> run_game_scene assets board
+  | GameScene (board, level_index) -> run_game_scene assets board level_index
   | Credits -> run_credits_scene assets
   | FileInput state -> run_file_input_scene assets state
 

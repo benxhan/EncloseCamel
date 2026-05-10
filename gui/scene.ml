@@ -2,9 +2,16 @@ open EncloseCamel
 open Model
 open Raylib
 
-type scene = Home | LevelSelect | GameScene of board | Credits | FileInput of (string * bool * string option)
+type scene =
+  | Home
+  | LevelSelect
+  | GameScene of board * int
+  | Credits
+  | FileInput of (string * bool * string option)
 
-type scene_outcome = Quit | NextScene of scene
+type scene_outcome =
+  | Quit
+  | NextScene of scene
 
 type button_assets = {
   play : Texture.t;
@@ -15,11 +22,8 @@ type button_assets = {
 }
 
 let button_textures : button_assets option ref = ref None
-
 let asset_dir = "gui/assets"
-
 let button_texture_path file_name = Filename.concat asset_dir file_name
-
 let load_button_texture file_name = load_texture (button_texture_path file_name)
 
 let load_menu_textures () =
@@ -50,9 +54,7 @@ let unload_menu_textures () =
       button_textures := None
 
 let button_rect x y texture scale =
-  Rectangle.create
-    (float x)
-    (float y)
+  Rectangle.create (float x) (float y)
     (float (Texture.width texture) *. scale)
     (float (Texture.height texture) *. scale)
 
@@ -64,18 +66,20 @@ let mouse_over rect =
   && my >= Rectangle.y rect
   && my <= Rectangle.y rect +. Rectangle.height rect
 
-let button_clicked rect = mouse_over rect && is_mouse_button_pressed MouseButton.Left
+let button_clicked rect =
+  mouse_over rect && is_mouse_button_pressed MouseButton.Left
 
 let draw_button x y texture label scale =
-  draw_texture_ex texture (Vector2.create (float x) (float y)) 0.0 scale Color.white;
+  draw_texture_ex texture
+    (Vector2.create (float x) (float y))
+    0.0 scale Color.white;
   let scaled_w = int_of_float (float (Texture.width texture) *. scale) in
   let scaled_h = int_of_float (float (Texture.height texture) *. scale) in
   draw_rectangle_lines x y scaled_w scaled_h Color.black;
   let text_width = measure_text label 20 in
-  draw_text
-    label
-    (x + (scaled_w - text_width) / 2)
-    (y + (scaled_h - 20) / 2)
+  draw_text label
+    (x + ((scaled_w - text_width) / 2))
+    (y + ((scaled_h - 20) / 2))
     20 Color.black
 
 let draw_text_hcenter text y font_size color =
@@ -93,7 +97,8 @@ let draw_scene_title title =
 let find_menu_action buttons scale =
   match
     List.find_opt
-      (fun (x, y, texture, _, _) -> button_clicked (button_rect x y texture scale))
+      (fun (x, y, texture, _, _) ->
+        button_clicked (button_rect x y texture scale))
       buttons
   with
   | Some (_, _, _, _, action) -> Some action

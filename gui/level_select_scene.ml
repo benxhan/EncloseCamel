@@ -41,8 +41,8 @@ let draw_level_preview board x y w h =
 
   draw_rectangle_lines ox oy preview_w preview_h Color.black
 
-let load_level filename =
-  try GameScene (Parser.load_board filename)
+let load_level level_index filename =
+  try GameScene (Parser.load_board filename, level_index)
   with exn ->
     print_endline ("Could not load level: " ^ Printexc.to_string exn);
     LevelSelect
@@ -74,7 +74,7 @@ let run_level_select_scene assets =
           let y = start_y + (row * gap_y) in
           let label = "Level " ^ string_of_int (i + 1) in
           let filename = level_files.(i) in
-          (i, x, y, label, fun () -> load_level filename))
+          (i, x, y, label, fun () -> load_level i filename))
     in
     let back_button =
       [
