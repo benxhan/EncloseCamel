@@ -11,9 +11,14 @@ let run_home_scene assets =
   let x = (window_width - button_width) / 2 in
   let start_y = 260 in
   let buttons =
-    [ (x, start_y, assets.play, "Play", fun () -> NextScene LevelSelect)
-    ; (x, start_y + 100, assets.load_level, "Load Level", fun () -> NextScene (FileInput ("", true, None)))
-    ; (x, start_y + 200, assets.credits, "Credits", fun () -> NextScene Credits)
+    [
+      (x, start_y, assets.play, "Play", fun () -> NextScene LevelSelect);
+      ( x,
+        start_y + 100,
+        assets.load_level,
+        "Load Level",
+        fun () -> NextScene (FileInput ("", true, None)) );
+      (x, start_y + 200, assets.credits, "Credits", fun () -> NextScene Credits);
     ]
   in
   let rec loop () =
@@ -21,8 +26,12 @@ let run_home_scene assets =
     else if is_key_pressed Key.Q then Quit
     else (
       begin_drawing ();
-      let bg_scale_x = float window_width /. float (Texture.width assets.background) in
-      let bg_scale_y = float window_height /. float (Texture.height assets.background) in
+      let bg_scale_x =
+        float window_width /. float (Texture.width assets.background)
+      in
+      let bg_scale_y =
+        float window_height /. float (Texture.height assets.background)
+      in
       draw_texture_ex assets.background (Vector2.create 0.0 0.0) 0.0
         (max bg_scale_x bg_scale_y)
         Color.white;
