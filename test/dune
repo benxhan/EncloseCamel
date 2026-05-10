@@ -1,4 +1,4 @@
 (test
- (name test_enclosecamel)
- (modules test_enclosecamel test_model test_parser test_render)
- (libraries ounit2 EncloseCamel))
+ (name test_main)
+ (modules test_main test_enclosecamel test_model test_parser test_render test_extra_coverage)
+ (libraries ounit2 EncloseCamel bisect_ppx.runtime))

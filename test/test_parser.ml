@@ -35,10 +35,11 @@ let test_load_board _ =
       [| Portal 0; Portal 1; Portal 2; Portal 9 |];
     |]
   in
-  assert_equal expected_grid board.grid ~msg:"grid parsing fails or does not match";
-  (match board.tip with
-   | None -> ()
-   | Some _ -> assert_failure "expected omitting tips yields None")
+  assert_equal expected_grid board.grid
+    ~msg:"grid parsing fails or does not match";
+  match board.tip with
+  | None -> ()
+  | Some _ -> assert_failure "expected omitting tips yields None"
 
 let test_load_board_with_tip _ =
   let filename = "test_tip_board.txt" in
@@ -53,11 +54,9 @@ let test_load_board_with_tip _ =
   close_out oc;
   let board = Parser.load_board filename in
   Sys.remove filename;
-  assert_equal
-    (Some "Cherries reward extra points.\nMind the bees!")
-    board.tip
+  assert_equal (Some "Cherries reward extra points.\nMind the bees!") board.tip
 
-let tests =
+let all_tests =
   "Parser Tests"
   >::: [
          "test_parse_coordinate" >:: test_parse_coordinate;

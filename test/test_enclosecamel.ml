@@ -44,14 +44,9 @@ let test_render_empty _ =
   in
   assert_equal expected result ~printer:(fun s -> "\n" ^ s ^ "\n")
 
-let suite =
-  "EncloseCamel Master Test Suite"
+let all_tests =
+  "EncloseCamel tests"
   >::: [
          "render_board basic" >:: test_render_board;
          "render_board empty" >:: test_render_empty;
-         Test_model.all_tests;
-         Test_parser.tests;
-         Test_render.tests;
        ]
-
-let _ = run_test_tt_main suite

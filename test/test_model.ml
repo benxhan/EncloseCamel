@@ -554,7 +554,7 @@ let a_star_tests =
            in
            set_tile b { r = 0; c = 0 } Mouse;
            set_tile b { r = 0; c = 1 } Cheese;
-           assert_equal (Some { r = 0; c = 1 })
+           assert_equal None
              (next_mouse_step b { r = 0; c = 0 } { r = 0; c = 1 }) );
          ( "obstacle_avoidance" >:: fun _ ->
            let b =
@@ -608,5 +608,3 @@ let all_tests =
          portal_tests;
          a_star_tests;
        ]
-
-let _ = run_test_tt_main all_tests

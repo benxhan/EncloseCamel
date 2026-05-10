@@ -18,13 +18,9 @@ val set_gui_tile_px : int -> unit
 val tile_size : int
 
 val info_panel_height : int
-
 val init_gui_textures : unit -> unit
-
 val unload_gui_textures : unit -> unit
-
 val draw_board_gui : ?offset_x:int -> ?offset_y:int -> Model.board -> unit
-
 val str_render_board : Model.board -> string
 
 (** [print_place_result result] prints feedback for failed placements.

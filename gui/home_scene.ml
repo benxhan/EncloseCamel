@@ -5,31 +5,26 @@ open Common
 
 let run_home_scene assets =
   let scale = 0.15 in
+  let window_width = get_screen_width () in
+  let window_height = get_screen_height () in
   let button_width = int_of_float (float 1480 *. scale) in
+  let x = (window_width - button_width) / 2 in
   let start_y = 260 in
+  let buttons =
+    [
+      (x, start_y, assets.play, "Play", fun () -> NextScene LevelSelect);
+      ( x,
+        start_y + 100,
+        assets.load_level,
+        "Load Level",
+        fun () -> NextScene (FileInput ("", true, None)) );
+      (x, start_y + 200, assets.credits, "Credits", fun () -> NextScene Credits);
+    ]
+  in
   let rec loop () =
     if window_should_close () then Quit
     else if is_key_pressed Key.Q then Quit
     else (
-      toggle_fullscreen_hotkey ();
-      let window_width = get_screen_width () in
-      let window_height = get_screen_height () in
-      let x = (window_width - button_width) / 2 in
-      let buttons =
-        [
-          (x, start_y, assets.play, "Play", fun () -> NextScene LevelSelect);
-          ( x,
-            start_y + 100,
-            assets.load_level,
-            "Load Level",
-            fun () -> NextScene (FileInput ("", true, None)) );
-          ( x,
-            start_y + 200,
-            assets.credits,
-            "Credits",
-            fun () -> NextScene Credits );
-        ]
-      in
       begin_drawing ();
       let bg_scale_x =
         float window_width /. float (Texture.width assets.background)

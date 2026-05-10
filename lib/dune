@@ -1,3 +1,5 @@
 (library
  (name EncloseCamel)
- (libraries ANSITerminal raylib))
+ (libraries ANSITerminal raylib bisect_ppx.runtime)
+ (preprocess
+  (pps bisect_ppx)))

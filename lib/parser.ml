@@ -158,5 +158,5 @@ let load_board (filename : string) : Model.board =
     initial_grid;
     initial_walls = walls_remaining;
     needs_reset = false;
-    tip = tip_opt
+    tip = tip_opt;
   }

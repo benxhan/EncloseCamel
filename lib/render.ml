@@ -1,16 +1,17 @@
 open Model
 open Raylib
 
+(* The GUI/Raylib code below depends on image assets, texture loading, and a
+   graphics runtime. It is not practical to cover with normal OUnit tests run by
+   [dune test], so we exclude only this GUI-only section from Bisect coverage.
+   The terminal/string rendering functions below are still covered. *)
+[@@@coverage off]
+
 let base_gui_tile_px = 64
 let tile_size = base_gui_tile_px
-
 let gui_tile_px_ref = ref base_gui_tile_px
-
 let gui_tile_px () = !gui_tile_px_ref
-
-let set_gui_tile_px n =
-  gui_tile_px_ref := max 1 (min base_gui_tile_px n)
-
+let set_gui_tile_px n = gui_tile_px_ref := max 1 (min base_gui_tile_px n)
 let info_panel_height = 96
 let asset_dir = "gui/assets"
 
@@ -107,10 +108,11 @@ let portal_color id =
   let b = ((id * 150) + 200) mod 256 in
   Color.create r g b 255
 
-let draw_tile_texture ?(color = Color.white) ?(offset_x = 0) ?(offset_y = 0) texture r c =
+let draw_tile_texture ?(color = Color.white) ?(offset_x = 0) ?(offset_y = 0)
+    texture r c =
   let ts = gui_tile_px () in
-  let x = c * ts + offset_x in
-  let y = r * ts + offset_y in
+  let x = (c * ts) + offset_x in
+  let y = (r * ts) + offset_y in
   let scale = float ts /. float (Texture.width texture) in
   draw_texture_ex texture (Vector2.create (float x) (float y)) 0.0 scale color;
   draw_rectangle_lines x y ts ts (Color.create 255 255 255 20)
@@ -186,18 +188,16 @@ let draw_board_gui ?(offset_x = 0) ?(offset_y = 0) board =
           | Portal id ->
               draw_tile_texture ~offset_x ~offset_y ~color:(portal_color id)
                 portal_tex r c
-          | Mouse ->
-              draw_tile_texture ~offset_x ~offset_y mouse_tex r
-                c
-          | Cheese ->
-              draw_tile_texture ~offset_x ~offset_y cheese_tex r
-                c)
+          | Mouse -> draw_tile_texture ~offset_x ~offset_y mouse_tex r c
+          | Cheese -> draw_tile_texture ~offset_x ~offset_y cheese_tex r c)
         row)
     board.grid;
   let rows = Array.length board.grid in
   let cols = Array.length board.grid.(0) in
   let ts = gui_tile_px () in
   draw_rectangle_lines offset_x offset_y (cols * ts) (rows * ts) Color.black
+
+[@@@coverage on]
 
 let render_board _board =
   let win_state = reachable_from_camel _board in
@@ -210,24 +210,20 @@ let render_board _board =
               ANSITerminal.print_string
                 [ ANSITerminal.white; ANSITerminal.on_red ]
                 "C"
-          (* print_string " " *)
           | Water ->
               ANSITerminal.print_string
                 [ ANSITerminal.white; ANSITerminal.on_blue ]
                 "W"
-          (* print_string " " *)
           | Wall ->
               ANSITerminal.print_string
                 [ ANSITerminal.white; ANSITerminal.on_black ]
                 "B"
-          (* print_string " " *)
           | Blank -> (
               match win_state with
               | Open ->
                   ANSITerminal.print_string
                     [ ANSITerminal.white; ANSITerminal.on_green ]
                     "G"
-              (* print_string " " *)
               | Enclosed area -> (
                   let check_tile = area.tiles.(r_ind).(c_ind) in
                   match check_tile with
@@ -235,7 +231,6 @@ let render_board _board =
                       ANSITerminal.print_string
                         [ ANSITerminal.black; ANSITerminal.on_yellow ]
                         "G"
-                  (* print_string " " *)
                   | false ->
                       ANSITerminal.print_string
                         [ ANSITerminal.white; ANSITerminal.on_green ]
@@ -249,7 +244,6 @@ let render_board _board =
               ANSITerminal.print_string
                 [ ANSITerminal.white; ANSITerminal.on_magenta ]
                 (String.make 1 props.file_char)
-          (* print_string " " *)
         in
         Array.iteri tileprint row;
         print_newline ())

@@ -39,5 +39,5 @@ let test_str_render_board _ =
   if not (String.contains s '0') then assert_failure "Expected '0' for portal 0";
   if not (String.contains s '9') then assert_failure "Expected '9' for portal 9"
 
-let tests =
+let all_tests =
   "Render Tests" >::: [ "test_str_render_board" >:: test_str_render_board ]
