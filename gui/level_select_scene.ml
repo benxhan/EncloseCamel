@@ -4,8 +4,15 @@ open Scene
 open Common
 open EncloseCamel.Model
 
-(* All the level files that we have *)
-let level_files = [| "data/level1.txt"; "data/level2.txt"; "data/level3.txt" |]
+(* All the level files that we have, also introduced in game_scene. *)
+let level_files =
+  [|
+    "data/level1.txt";
+    "data/level2.txt";
+    "data/level3.txt";
+    "data/level4.txt";
+    "data/level5.txt";
+  |]
 
 let preview_color = function
   | Camel -> Color.create 235 196 67 255

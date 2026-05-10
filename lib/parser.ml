@@ -83,8 +83,7 @@ let load_board (filename : string) : Model.board =
             | _ -> String.concat "\n" rest
           in
           let s = String.trim merged in
-          if s = "" then (List.rev acc, None)
-          else (List.rev acc, Some s)
+          if s = "" then (List.rev acc, None) else (List.rev acc, Some s)
       | line :: rest -> take_grid (line :: acc) rest
     in
     take_grid [] after_header_lines
