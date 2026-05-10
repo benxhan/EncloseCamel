@@ -252,7 +252,7 @@ let current_bonus_walls board =
 
 let next_mouse_step board mouse_loc cheese_loc =
   let manhattan c1 c2 = abs (c1.r - c2.r) + abs (c1.c - c2.c) in
-  if manhattan mouse_loc cheese_loc <= 1 then Some cheese_loc
+  if manhattan mouse_loc cheese_loc <= 1 then None
   else
     let height = Array.length board.grid in
     let width = Array.length board.grid.(0) in
@@ -260,9 +260,9 @@ let next_mouse_step board mouse_loc cheese_loc =
     let is_walkable r c =
       let tile = board.grid.(r).(c) in
       match tile with
-      | Portal _ -> false
+      | Blank -> true
       | Cheese -> true
-      | _ -> (properties_of tile).walkable
+      | _ -> false
     in
     let neighbors c =
       let dirs = [ (-1, 0); (1, 0); (0, -1); (0, 1) ] in
@@ -345,14 +345,8 @@ let place_wall board coord =
                       set_tile new_board mouse_coord Blank;
                       match get_tile new_board next_step with
                       | Cheese ->
-                          let grid_copy = Array.map Array.copy new_board.initial_grid in
-                          Stdlib.Ok
-                            {
-                              new_board with
-                              grid = grid_copy;
-                              walls_remaining = new_board.initial_walls;
-                              needs_reset = false;
-                            }
+                          set_tile new_board next_step Mouse;
+                          Stdlib.Ok { new_board with needs_reset = true }
                       | _ ->
                           set_tile new_board next_step Mouse;
                           Stdlib.Ok new_board))))
@@ -382,13 +376,8 @@ let place_wall board coord =
                       set_tile new_board mouse_coord Blank;
                       match get_tile new_board next_step with
                       | Cheese ->
-                          let grid_copy = Array.map Array.copy new_board.initial_grid in
-                          Stdlib.Ok
-                            {
-                              new_board with
-                              grid = grid_copy;
-                              walls_remaining = new_board.initial_walls;
-                              needs_reset = false;
-                            }                      | _ ->
+                          set_tile new_board next_step Mouse;
+                          Stdlib.Ok { new_board with needs_reset = true }
+                      | _ ->
                           set_tile new_board next_step Mouse;
                           Stdlib.Ok new_board))))
