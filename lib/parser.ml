@@ -93,23 +93,25 @@ let load_board (filename : string) : Model.board =
   let camel_pos = ref None in
   let char_to_tile row_idx col_idx ch =
     match ch with
-    | 'C' ->
-        (match !camel_pos with
-        | Some _ -> failwith "load_board: multiple camel tiles found"
-        | None -> camel_pos := Some { Model.r = row_idx; c = col_idx });
-        Model.Camel
-    | 'W' -> Model.Water
-    | 'B' -> Model.Wall
-    | 'G' -> Model.Blank
-    | 'R' -> Model.Cherry
-    | 'E' -> Model.Bees
-    | 'A' -> Model.GoldenApple
-    | 'L' -> Model.LavaBucket
     | '0' .. '9' as d -> Model.Portal (int_of_char d - int_of_char '0')
-    | c ->
-        failwith
-          (Printf.sprintf "load_board: invalid character '%c' at row %d, col %d"
-             c row_idx col_idx)
+    | c -> (
+        let tile_opt =
+          List.find_opt
+            (fun t -> (Model.properties_of t).file_char = c)
+            Model.base_tiles
+        in
+        match tile_opt with
+        | Some Model.Camel ->
+            (match !camel_pos with
+            | Some _ -> failwith "load_board: multiple camel tiles found"
+            | None -> camel_pos := Some { Model.r = row_idx; c = col_idx });
+            Model.Camel
+        | Some t -> t
+        | None ->
+            failwith
+              (Printf.sprintf
+                 "load_board: invalid character '%c' at row %d, col %d" c
+                 row_idx col_idx))
   in
   let grid : Model.tile array array =
     rows

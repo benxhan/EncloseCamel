@@ -14,6 +14,9 @@ type tile =
   | Portal of int
   | LavaBucket
 
+let base_tiles =
+  [ Camel; Water; Wall; Blank; Cherry; Bees; GoldenApple; LavaBucket ]
+
 type tile_properties = {
   points : int;
   walkable : bool;

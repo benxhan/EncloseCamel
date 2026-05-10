@@ -27,6 +27,10 @@ type tile =
   | Portal of int
   | LavaBucket
 
+(** A list of all unparameterized tiles, useful for parsing configuration
+    characters. *)
+val base_tiles : tile list
+
 type tile_properties = {
   points : int;
   walkable : bool;
