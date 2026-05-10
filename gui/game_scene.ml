@@ -5,7 +5,16 @@ open Scene
 open Common
 open Render
 
-let level_files = [| "data/level1.txt"; "data/level2.txt"; "data/level3.txt" |]
+(* All the level files that we have, also introduced in level_select_scene. *)
+let level_files =
+  [|
+    "data/level1.txt";
+    "data/level2.txt";
+    "data/level3.txt";
+    "data/level4.txt";
+    "data/level5.txt";
+  |]
+
 let default_status_message = "Click a tile to place or remove a wall."
 
 let can_go_next board =
