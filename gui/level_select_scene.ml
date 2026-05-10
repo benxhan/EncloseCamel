@@ -48,6 +48,8 @@ let load_level filename =
     LevelSelect
 
 let run_level_select_scene assets =
+  let mouse_ready = ref false in
+  let accept_clicks = ref false in
   let level_previews =
     Array.map
       (fun filename -> try Some (Parser.load_board filename) with _ -> None)
@@ -64,7 +66,7 @@ let run_level_select_scene assets =
   let gap_y = 135 in
   let total_width = (cols * button_width) + ((cols - 1) * gap_x) in
   let start_x = (window_width - total_width) / 2 in
-  let start_y = 180 in
+  let start_y = 230 in
 
   let level_buttons =
     List.init (Array.length level_files) (fun i ->
@@ -107,7 +109,7 @@ let run_level_select_scene assets =
 
     draw_text label (x + 35) (y + 90) 20 Color.black;
 
-    hovered && is_mouse_button_pressed MouseButton.Left
+    !accept_clicks && hovered && is_mouse_button_pressed MouseButton.Left
   in
 
   let rec loop () =
@@ -115,6 +117,10 @@ let run_level_select_scene assets =
     else if is_key_pressed Key.Q || is_key_pressed Key.Escape then
       NextScene Home
     else (
+      accept_clicks := !mouse_ready;
+
+      if (not !mouse_ready) && not (is_mouse_button_down MouseButton.Left) then
+        mouse_ready := true;
       begin_drawing ();
 
       let bg_scale_x =
